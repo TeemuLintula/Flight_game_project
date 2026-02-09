@@ -25,9 +25,11 @@ def GenerateMission():
     Destination = "work in progress"
     Pay = 0
     if Legal:
+        Pay = random.randint(1000,3000)
         Legal_Cargo = [CargoType.HUMANS, CargoType.CARGO]
         Cargo = random.choice(Legal_Cargo)
     else:
+        Pay = random.randint(2500,6000)
         Illegal_Cargo = [CargoType.ILLEGAL_HUMANS, CargoType.TAX_FREE_SPICES]
         Cargo = random.choice(Illegal_Cargo)
 
