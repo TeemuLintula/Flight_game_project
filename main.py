@@ -1,8 +1,7 @@
 from Eventit import GameSetup
 from Eventit import Mission
 
-#GameSetup.Welcome()
-Current_mission = dict
+GameSetup.Welcome()
 Current_mission = Mission.GenerateMission()
 
 
