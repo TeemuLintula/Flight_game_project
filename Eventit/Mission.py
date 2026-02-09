@@ -9,7 +9,7 @@ class CargoType(Enum):
 
 mission = {
     "Name": "",
-    "Legal": 1,
+    "Legal": True,
     "Location": "",
     "Destination": "",
     "Pay": 0,
@@ -20,16 +20,14 @@ mission = {
 
 def GenerateMission():
     Name = "New Mission"
-    Legal = random.randint(1,2)
-    Location = ""       # Pitää hakea tietokannoista
-    Destination = ""
+    Legal = random.choice([True, False])
+    Location = "work in progress"       # Pitää hakea tietokannoista
+    Destination = "work in progress"
     Pay = 0
-    if Legal == 1:
-        Pay = random.randint(100,300)
+    if Legal:
         Legal_Cargo = [CargoType.HUMANS, CargoType.CARGO]
         Cargo = random.choice(Legal_Cargo)
     else:
-        Pay = random.randint(250,600)
         Illegal_Cargo = [CargoType.ILLEGAL_HUMANS, CargoType.TAX_FREE_SPICES]
         Cargo = random.choice(Illegal_Cargo)
 
@@ -38,12 +36,14 @@ def GenerateMission():
     else:
         Cargo_amount = random.randint(100,1000)
 
-    mission["Name"] = Name
-    mission["Legal"] = Legal
-    mission["Location"] = Location
-    mission["Destination"] = Destination
-    mission["Pay"] = Pay
-    mission["Cargo"] = Cargo
-    mission["Cargo_amount"] = Cargo_amount
+    mission={
+        "Name": Name,
+        "Legal": Legal,
+        "Location": Location,
+        "Destination": Destination,
+        "Pay": Pay,
+        "Cargo": Cargo,
+        "Cargo_amount": Cargo_amount
+    }
 
     return mission
