@@ -1,8 +1,7 @@
 from Eventit import GameSetup
-import  Mission
-import Player
+from Eventit import Mission
 
-
-
-GameSetup.Welcome()
-print(Player.Name)
+#GameSetup.Welcome()
+Current_mission = dict
+Current_mission = Mission.GenerateMission()
+print(Current_mission)
