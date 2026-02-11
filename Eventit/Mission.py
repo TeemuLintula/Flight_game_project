@@ -1,12 +1,14 @@
 import random
 from enum import Enum
 
+# Enum-luokka, joka määrittelee erilaiset rahtityypit
 class CargoType(Enum):
     HUMANS = "humans"
     ILLEGAL_HUMANS = "illegal humans"
     CARGO = "cargo"
     TAX_FREE_SPICES = "tax free spices"
 
+# Asettaa muuttujien arvot
 mission = {
     "Name": "",
     "Legal": True,
@@ -17,7 +19,7 @@ mission = {
     "Cargo_amount": 0
 }
 
-
+# Generoi tehtävän
 def GenerateMission():
     Name = "New Mission"
     Legal = random.choice([True, False])
