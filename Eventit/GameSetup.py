@@ -1,10 +1,9 @@
 import mysql.connector
-import getpass
 
 #Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan
 print("Tervetuloa lentopeliin")
 tietokanta_kayttaja = input("Enter MariaDB username: ")
-tietokanta_salasana = getpass.getpass("Enter MariaDB password: ")
+tietokanta_salasana = input("Enter MariaDB password: ")
 global yhteys
 yhteys = mysql.connector.connect(
 host="localhost",
