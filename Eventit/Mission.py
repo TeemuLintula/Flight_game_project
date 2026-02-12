@@ -22,8 +22,10 @@ mission = {
 def GenerateMission():
     Name = "New Mission"
     Legal = random.choice([True, False])
-    Location = "work in progress"       # Pitää hakea tietokannoista
-    Destination = "work in progress"
+    GameSetup.cursor.execute("SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+    Location = GameSetup.cursor.fetchall()       # Pitää hakea tietokannoista
+    GameSetup.cursor.execute("SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+    Destination = GameSetup.cursor.fetchall()
     Pay = 0
     if Legal:
         Pay = random.randint(1000,3000)
@@ -50,3 +52,4 @@ def GenerateMission():
     }
 
     return mission
+#GenerateMission()
