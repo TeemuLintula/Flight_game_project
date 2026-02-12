@@ -20,11 +20,4 @@ def Welcome():
      SetupTietokanta(tietokanta_kayttaja, tietokanta_salasana)
      Name = input("Kerro nimesi: ")
      return
-Welcome()
-
-sql = f"SELECT name, municipality FROM airport WHERE ident = 'EFHK';"
-# print(sql)
-cursor = yhteys.cursor()
-cursor.execute(sql)
-tulos = cursor.fetchone()
-print(tulos)
+#Welcome()

@@ -1,6 +1,6 @@
 import random
 from enum import Enum
-
+from Eventit import GameSetup
 # Enum-luokka, joka määrittelee erilaiset rahtityypit
 class CargoType(Enum):
     HUMANS = "humans"
@@ -18,7 +18,6 @@ mission = {
     "Cargo": CargoType.CARGO,
     "Cargo_amount": 0
 }
-
 # Generoi tehtävän
 def GenerateMission():
     Name = "New Mission"
