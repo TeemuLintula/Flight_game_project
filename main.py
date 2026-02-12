@@ -18,6 +18,6 @@ while True:
         print("Amount of passengers: ", str(Current_mission["Cargo_amount"]))
     else:
         print("Cargo amount: ", str(Current_mission["Cargo_amount"]) + "KG")
-    next_mission = input("Do you want to continue (y/n)? ")
-    if next_mission == "n":
+
+    if input("Do you want to continue (y/n)? ") == "n":
         break
