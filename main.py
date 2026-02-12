@@ -3,7 +3,7 @@ from Eventit import Mission
 
 GameSetup.Welcome()
 Current_mission = Mission.GenerateMission()
-
+#testi
 
 print("-----------------------------------------------------------------------------------------------")
 print("Your new mission is: ", Current_mission["Name"])
