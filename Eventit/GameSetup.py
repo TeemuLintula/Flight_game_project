@@ -70,7 +70,9 @@ result = cursor.fetchone()
 
 if not result:
     sql = "INSERT INTO game (screen_name) VALUES (%s)"
+    locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
     cursor.execute(sql, (name,))
+    cursor.execute(locaddsql, (name,))
     yhteys.commit()
     print(f"Uusi pelaaja {name} luotu tietokantaan")
 else:
