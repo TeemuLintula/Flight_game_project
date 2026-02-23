@@ -28,8 +28,8 @@ while True:
                 missions.append(Mission.GenerateMission())
                 print(missions[i]["Name"], i)
         else:
-            for mission in missions:
-                print(missions[mission]["Name"], missions)
+            for i in range(len(missions)):
+                print(missions[i]["Name"], i)
         Current_mission = missions[int(input("Select mission number:"))]
         newMission()
         vastaus = int(input("1. Start mision 2. Change mission: "))
