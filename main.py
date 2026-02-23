@@ -15,8 +15,14 @@ def newMission():
         print("Amount of passengers: ", str(Current_mission["Cargo_amount"]))
         print("Job will pay you: ", Current_mission["Pay"], "Euros/Passenger")
     else:
-        print("Cargo amount: ", str(Current_mission["Cargo_amount"] * 1000) + "KG")
-        print("Job will pay you: ", Current_mission["Pay"], "Euros/Tonne")
+        if Current_mission["Cargo"] == Mission.CargoType.CARGO:
+            print("Cargo amount: ", str(Current_mission["Cargo_amount"] * 1000) + "KG")
+            print("Job will pay you: ", Current_mission["Pay"], "Euros/Tonne")
+        else:
+            print("Cargo amount: ", str(Current_mission["Cargo_amount"]) + "KG")
+            print("Job will pay you: ", Current_mission["Pay"], "Euros/Kilo")
+
+
 
 while True:
     vastaus = 1

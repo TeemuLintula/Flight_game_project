@@ -49,11 +49,11 @@ def GenerateMission():
         Destination = GameSetup.cursor.fetchall()
         if Cargo == CargoType.ILLEGAL_HUMANS:
             Cargo_amount = random.randint(5, 100)
-            Pay = random.randint(20, 100)
+            Pay = random.randint(30, 150)
             Name = f"{Location[0][1]} Donkey flight"
         else:
             Cargo_amount = random.randint(20, 100)
-            Pay = random.randint(5, 100)
+            Pay = random.randint(8, 150)
             Name = f"{Location[0][1]} Spice flight"
 
     mission={
