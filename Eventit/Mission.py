@@ -20,26 +20,41 @@ mission = {
 }
 # Generoi tehtävän
 def GenerateMission():
-    Name = "New Mission"
     Legal = random.choice([True, False])
-    GameSetup.cursor.execute("SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
-    Location = GameSetup.cursor.fetchall()       # Pitää hakea tietokannoista
-    GameSetup.cursor.execute("SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
-    Destination = GameSetup.cursor.fetchall()
-    Pay = 0
     if Legal:
-        Pay = random.randint(1000,3000)
         Legal_Cargo = [CargoType.HUMANS, CargoType.CARGO]
         Cargo = random.choice(Legal_Cargo)
+        GameSetup.cursor.execute(
+            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+        Location = GameSetup.cursor.fetchall()
+        GameSetup.cursor.execute(
+            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+        Destination = GameSetup.cursor.fetchall()
+        if Cargo == CargoType.HUMANS:
+            Cargo_amount = random.randint(5, 100)
+            Pay = random.randint(20, 100)
+            Name = f"{Location[0][1]} Passenger flight"
+        else:
+            Cargo_amount = random.randint(20, 100)
+            Pay = random.randint(5, 100)
+            Name = f"{Location[0][1]} Cargo flight"
     else:
-        Pay = random.randint(2500,6000)
         Illegal_Cargo = [CargoType.ILLEGAL_HUMANS, CargoType.TAX_FREE_SPICES]
         Cargo = random.choice(Illegal_Cargo)
-
-    if Cargo == CargoType.HUMANS or Cargo == CargoType.ILLEGAL_HUMANS:
-        Cargo_amount = random.randint(5,100)
-    else:
-        Cargo_amount = random.randint(100,1000)
+        GameSetup.cursor.execute(
+            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'AF' or airport.continent = 'SA' or airport.iso_country = 'SY' or airport.iso_country = 'AF') ORDER BY RAND() LIMIT 1;")
+        Location = GameSetup.cursor.fetchall()
+        GameSetup.cursor.execute(
+            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'EU' or airport.continent = 'NA' or airport.iso_country = 'CN' or airport.iso_country = 'IN') ORDER BY RAND() LIMIT 1;")
+        Destination = GameSetup.cursor.fetchall()
+        if Cargo == CargoType.ILLEGAL_HUMANS:
+            Cargo_amount = random.randint(5, 100)
+            Pay = random.randint(20, 100)
+            Name = f"{Location[0][1]} Donkey flight"
+        else:
+            Cargo_amount = random.randint(20, 100)
+            Pay = random.randint(5, 100)
+            Name = f"{Location[0][1]} Spice flight"
 
     mission={
         "Name": Name,

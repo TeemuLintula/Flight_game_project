@@ -1,8 +1,6 @@
 from Eventit import GameSetup
 from Eventit import Mission
 
-GameSetup
-
 while True:
     Current_mission = Mission.GenerateMission()
 
@@ -19,5 +17,5 @@ while True:
     else:
         print("Cargo amount: ", str(Current_mission["Cargo_amount"]) + "KG")
 
-    if input("Do you want to continue (y/n)? ") == "n":
+    if input("Do you want to continue (y/n): ") == "n":
         break
