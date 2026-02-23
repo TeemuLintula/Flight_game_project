@@ -49,13 +49,6 @@ if "AUTO_INCREMENT" not in create_stmt:
     # 4. Palautetaan FK-tarkistukset
     cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
-    # 5. Lisätään FK takaisin
-    cursor.execute("""
-        ALTER TABLE goal_reached
-        ADD CONSTRAINT goal_reached_ibfk_1
-        FOREIGN KEY game_id REFERENCES game(id)
-    """)
-
     yhteys.commit()
     print("Taulu päivitetty onnistuneesti!")
 else:
