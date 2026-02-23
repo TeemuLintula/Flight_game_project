@@ -1,3 +1,17 @@
+def tulli():
+
+    print("Customs are asking you to verify cargo")
+    vastaus = input("Are you willing to show cargo? (yes/no) ")
+
+    if vastaus == "yes":
+        print('Customs: ("checking")')
+        print("You're good to go! ")
+    elif vastaus == "no":
+        print("Customs: We're going to get you to prison")
+    else:
+        print("Enter yes or no")
+        return
+
 import random
 
 
@@ -31,4 +45,3 @@ def terrorist():
 
 
 # Call the function
-terrorist()
