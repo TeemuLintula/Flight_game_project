@@ -1,4 +1,7 @@
 import random
+import sys
+import time
+
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
         sys.stdout.write(c)
