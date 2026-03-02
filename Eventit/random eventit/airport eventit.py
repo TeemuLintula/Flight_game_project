@@ -1,16 +1,22 @@
 def tulli():
 
     print("Customs are asking you to verify cargo")
-    vastaus = input("Are you willing to show cargo? (yes/no) ")
 
-    if vastaus == "yes":
-        print('Customs: ("checking")')
-        print("You're good to go! ")
-    elif vastaus == "no":
-        print("Customs: We're going to get you to prison")
-    else:
-        print("Enter yes or no")
-        return
+    while True:
+        vastaus = input("Are you willing to show cargo? (yes/no) ")
+        if vastaus.upper() == "YES":
+            print('Customs: ("checking")')
+            print("You're good to go! ")
+            break
+        elif vastaus.upper() == "NO":
+            print("Customs: We're going to get you to prison")
+            #pelin lopetus funktio
+            break
+        else:
+            print("Enter yes/no")
+
+
+
 
 import random
 
