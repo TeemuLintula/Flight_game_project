@@ -45,6 +45,7 @@ def missionFLight():
 while True:
     vastaus = 1
     missions = []
+    print("You are now at...") #Tähän pelaajan nykyinen sijainti
     vastaus = int(input("1. Select new mission / 2. Fly to homebase: "))
     if vastaus == 1:
         while True:
