@@ -1,5 +1,5 @@
 import random
-
+import time
 from Eventit import GameSetup
 from Eventit import Mission
 def newMission():
@@ -21,23 +21,49 @@ def newMission():
             print("Cargo amount: ", str(Current_mission["Cargo_amount"]) + "KG")
             print("Job will pay you: ", Current_mission["Pay"], "Euros/Kilo")
 
+def missionFLight():
+    print("-----------------------------------------------------------------------------------------------")
+    print(f"You are flying to {Current_mission['Location'][0][0]}")
+    for i in range(0, 5):
+        print(".")
+        time.sleep(1)
+    print(f"You arrived to {Current_mission['Location'][0][0]}")
+    if Current_mission["Cargo"] == Mission.CargoType.HUMANS or Current_mission["Cargo"] == Mission.CargoType.ILLEGAL_HUMANS:
+        print("Taking in passengers")
+    else:
+        print("Loading cargo")
+    for i in range(0, 5):
+        print(".")
+        time.sleep(1)
+    print(f"You are flying to {Current_mission['Destination'][0][0]}")
+    for i in range(0, 5):
+        print(".")
+        time.sleep(1)
+    print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
+
+
 while True:
     vastaus = 1
     missions = []
-    while True:
-        print("-----------------------------------------------------------------------------------------------")
-        if vastaus == 1:
-            for i in range(random.randint(3, 6)):
-                missions.append(Mission.GenerateMission())
-                print(missions[i]["Name"], i)
-        else:
-            for i in range(len(missions)):
-                print(missions[i]["Name"], i)
-        Current_mission = missions[int(input("Select mission number:"))]
-        newMission()
-        vastaus = int(input("1. Start mision 2. Change mission: "))
-        if vastaus == 1:
-            break
-    if input("Do you want to continue (y/n): ") == "n":
-        break
+    vastaus = int(input("1. Select new mission / 2. Fly to homebase"))
+    if vastaus == 1:
+        while True:
+            print("-----------------------------------------------------------------------------------------------")
+            if vastaus == 1:
+                for i in range(random.randint(3, 6)):
+                    missions.append(Mission.GenerateMission())
+                    print(missions[i]["Name"], i)
+            else:
+                for i in range(len(missions)):
+                    print(missions[i]["Name"], i)
+            Current_mission = missions[int(input("Select mission number:"))]
+            newMission()
+            vastaus = int(input("1. Start mision 2. Change mission: "))
+            if vastaus == 1:
+                missionFLight()
+                break
+    else:
+        homebases = ["kitteen lentokenttä", "epstein saari"] #tähän laitetaan pelaajan omistamat baset
+        for base in range(len(homebases)):
+            print(f"{homebases[base]} {base}")
 
