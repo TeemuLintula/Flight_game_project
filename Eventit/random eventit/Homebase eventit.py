@@ -1,5 +1,9 @@
 import random
-
+def hidastulostus(teksti, nopeus=0.03):
+    for c in teksti + "\n":
+        sys.stdout.write(c)
+        sys.stdout.flush()
+        time.sleep(nopeus)
 def karhuryhma():
     print("Your homebase is being investigated by karhuryhmä ")
     spice = random.randint(1,1000)
