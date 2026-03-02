@@ -37,7 +37,6 @@ def stuertti():
     elif valinta == "5":
         hidastulostus("Vieruskaverisi ajattelee sinua köyhäksi 😅")
 
-stuertti()
 
 import sys
 import time
@@ -91,4 +90,3 @@ def terrorist():
             hidastulostus("Please enter only 1 or 2.")
 
 # Call the function
-terrorist()
