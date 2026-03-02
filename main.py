@@ -67,4 +67,10 @@ while True:
         homebases = ["kitteen lentokenttä", "epstein saari"] #tähän laitetaan pelaajan omistamat baset
         for base in range(len(homebases)):
             print(f"{homebases[base]} {base}")
-
+        selectedBase = homebases[int(input("Select base number: "))]
+        print("-----------------------------------------------------------------------------------------------")
+        print(f"You are flying to {selectedBase}")
+        for i in range(0, 5):
+            print(".")
+            time.sleep(1)
+        print(f"You arrived to {selectedBase}")
