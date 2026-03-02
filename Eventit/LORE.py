@@ -5,8 +5,8 @@ def sprint(str):
      sys.stdout.write(c)
      sys.stdout.flush()
      time.sleep(4./90)
-
-sprint("A single father from Kittee is in a huge amount of debt to the state.\n"
+def lore():
+    sprint("A single father from Kittee is in a huge amount of debt to the state.\n"
           "He inherits his father’s old airplane and a private airfield.\n"
           "“Petteri” leaves his child in the care of his sister.\n"
           "In a hangar at the airfield, a secret leftover business is discovered.\n"

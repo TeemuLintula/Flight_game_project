@@ -13,7 +13,7 @@ def tulli():
             #pelin lopetus funktio
             break
         else:
-            print("Enter yes/no")
+            print("Please enter yes or no")
 
 
 

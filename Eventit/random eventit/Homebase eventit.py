@@ -10,4 +10,27 @@ def karhuryhma():
         print("Low chance of being held into custody")
     return
 
-karhuryhma()
+def naapuri():
+    print("Your neighbour Greg is knocking on your hangar door. ")
+
+    while True:
+        naapuri = input("Will you open the door? (yes/no)")
+        if naapuri.upper() == "YES":
+            print("Greg: Oh hello there!\n"
+                 "I was just thinking, why it's smelling so weird in here?\n"
+                 "Could you stop whatever produces these smells?")
+            vastaus1 = input("Will you stop producing spices for Greg? (yes/no) ")
+            if vastaus1.upper() == "YES":
+                print("Greg: Thank you so much for limiting your output of smells!\n(+1000 social credit)")
+                break
+            elif vastaus1.upper() == "NO":
+                print("Greg: Oh... this won't be the last time your hearing from me... ")
+                break
+        elif naapuri.upper() == "NO":
+            print('"Greg" is punching door 3 more times. After that he leaves.')
+            break
+        else:
+            print("Please enter yes or no")
+
+naapuri()
+

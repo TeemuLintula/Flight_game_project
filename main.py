@@ -2,7 +2,6 @@ import random
 
 from Eventit import GameSetup
 from Eventit import Mission
-
 def newMission():
     print("-----------------------------------------------------------------------------------------------")
     print("Your new mission is: ", Current_mission["Name"])
@@ -21,8 +20,6 @@ def newMission():
         else:
             print("Cargo amount: ", str(Current_mission["Cargo_amount"]) + "KG")
             print("Job will pay you: ", Current_mission["Pay"], "Euros/Kilo")
-
-
 
 while True:
     vastaus = 1

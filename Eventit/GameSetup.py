@@ -1,4 +1,5 @@
 import mysql.connector
+from Eventit import LORE
 from mysql.connector import Error
 print("Tervetuloa lentopeliin")
 #Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan
@@ -75,5 +76,6 @@ if not result:
     cursor.execute(locaddsql, (name,))
     yhteys.commit()
     print(f"Uusi pelaaja {name} luotu tietokantaan")
+    LORE.lore()
 else:
     print(f"Tervetuloa takaisin {name}!")
