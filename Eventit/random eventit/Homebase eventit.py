@@ -27,7 +27,7 @@ def naapuri():
             sprint("Greg: Oh hello there!\n"
                  "I was just thinking, why it's smelling so weird in here?\n"
                  "Could you stop whatever produces these smells?")
-            vastaus1 = input('"Will you stop producing spices for Greg?" (yes/no): ')
+            vastaus1 = input('"Will you stop producing spices just because of Greg?" (yes/no): ')
             if vastaus1.upper() == "YES":
                 sprint("Greg: Thank you so much for limiting your output of smells!\n(+1000 social credit)")
                 break
@@ -40,4 +40,4 @@ def naapuri():
         else:
             print("Please enter yes or no: ")
 
-karhuryhma()
+naapuri()
