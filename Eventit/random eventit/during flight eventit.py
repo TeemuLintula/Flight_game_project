@@ -16,7 +16,7 @@ def stuertti():
     hidastulostus("4 - Pasta")
     hidastulostus("5 - en syö")
 
-    # 🔁 kysytään kunnes valinta on oikein
+    # kysytään kunnes valinta on oikein
     while True:
         valinta = input("Anna numero (1-5): ")
 
@@ -25,7 +25,7 @@ def stuertti():
         else:
             hidastulostus("Virheellinen valinta, yritä uudestaan!")
 
-    # ✅ oikea valinta käsitellään
+
     if valinta == "1":
         hidastulostus("Valitsit pizzan 🍕")
     elif valinta == "2":
