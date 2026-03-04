@@ -32,6 +32,8 @@ cursor = yhteys.cursor()
 sql_usernamecheck = "SELECT screen_name FROM game WHERE screen_name = %s"
 cursor = yhteys.cursor()
 cursor.execute(sql_usernamecheck, (name,))
+id_game = "SELECT id FROM game WHERE screen_name = %s"
+cursor.execute(id_game, (name,))
 
 result = cursor.fetchone()
 
