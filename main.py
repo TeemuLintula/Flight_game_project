@@ -45,6 +45,7 @@ def missionFLight():
 while True:
     vastaus = 1
     missions = []
+    print("You are now at...") #Tähän pelaajan nykyinen sijainti
     vastaus = int(input("1. Select new mission / 2. Fly to homebase: "))
     if vastaus == 1:
         while True:
@@ -66,4 +67,10 @@ while True:
         homebases = ["kitteen lentokenttä", "epstein saari"] #tähän laitetaan pelaajan omistamat baset
         for base in range(len(homebases)):
             print(f"{homebases[base]} {base}")
-
+        selectedBase = homebases[int(input("Select base number: "))]
+        print("-----------------------------------------------------------------------------------------------")
+        print(f"You are flying to {selectedBase}")
+        for i in range(0, 5):
+            print(".")
+            time.sleep(1)
+        print(f"You arrived to {selectedBase}")
