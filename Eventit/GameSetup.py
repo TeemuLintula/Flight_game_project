@@ -29,9 +29,7 @@ cursor = yhteys.cursor()
 cursor = yhteys.cursor()
 
 # Tarkistaa onko pelaaja tietokannassa, jos ei ole luodaan uusi pelaaja
-sql_usernamecheck = "SELECT screen_name FROM game WHERE screen_name = %s"
 cursor = yhteys.cursor()
-cursor.execute(sql_usernamecheck, (name,))
 id_game = "SELECT id FROM game WHERE screen_name = %s"
 cursor.execute(id_game, (name,))
 
@@ -46,6 +44,7 @@ if not result:
     cursor.execute(moneysetsql, (name,))
     yhteys.commit()
     print(f"Uusi pelaaja {name} luotu tietokantaan")
-    LORE.lore()
+    print("-------------------------------------------------------------------------------------")
+    LORE.lore(name)
 else:
     print(f"Tervetuloa takaisin {name}!")
