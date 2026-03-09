@@ -28,54 +28,23 @@ cursor = yhteys.cursor()
 
 cursor = yhteys.cursor()
 
-# Tarkistetaan onko id-sarake jo AUTO_INCREMENT
-cursor.execute("SHOW CREATE TABLE game")
-create_stmt = cursor.fetchone()[1]
-
-if "AUTO_INCREMENT" not in create_stmt:
-    print("Päivitetään game-taulun id-sarake AUTO_INCREMENT-muotoon...")
-
-    # 1. Poistetaan FK goal_reached-taulusta
-    cursor.execute("ALTER TABLE goal_reached DROP FOREIGN KEY goal_reached_ibfk_1")
-
-    # 2. Poistetaan FK-tarkistukset varmuuden vuoksi
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-
-    # 3. Muokataan id-sarake oikeaan muotoon
-    cursor.execute("""
-        ALTER TABLE game
-        MODIFY COLUMN id INT NOT NULL AUTO_INCREMENT
-    """)
-
-    # 4. Palautetaan FK-tarkistukset
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
-
-    # 5. Lisätään FK takaisin
-    cursor.execute("""
-        ALTER TABLE goal_reached
-        ADD CONSTRAINT goal_reached_ibfk_1
-        FOREIGN KEY game_id REFERENCES game(id)
-    """)
-
-    yhteys.commit()
-    print("Taulu päivitetty onnistuneesti!")
-else:
-    print("Game-taulu on jo oikeassa muodossa.")
-
 # Tarkistaa onko pelaaja tietokannassa, jos ei ole luodaan uusi pelaaja
-sql_usernamecheck = "SELECT screen_name FROM game WHERE screen_name = %s"
 cursor = yhteys.cursor()
-cursor.execute(sql_usernamecheck, (name,))
+id_game = "SELECT id FROM game WHERE screen_name = %s"
+cursor.execute(id_game, (name,))
 
 result = cursor.fetchone()
 
 if not result:
     sql = "INSERT INTO game (screen_name) VALUES (%s)"
     locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
+    moneysetsql = "UPDATE game SET money = 1000 WHERE screen_name = %s"
     cursor.execute(sql, (name,))
     cursor.execute(locaddsql, (name,))
+    cursor.execute(moneysetsql, (name,))
     yhteys.commit()
     print(f"Uusi pelaaja {name} luotu tietokantaan")
-    LORE.lore()
+    print("-------------------------------------------------------------------------------------")
+    LORE.lore(name)
 else:
     print(f"Tervetuloa takaisin {name}!")
