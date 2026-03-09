@@ -34,8 +34,8 @@ def nainen():
     hidastulostus("(4) A Perfume store")
 
     while True:
-        valinta = input("Chose between (1-5)")
-        if valinta in ["1", "2", "3", "4", "5"]:
+        valinta = input("Choose between (1-4): ")
+        if valinta in ["1", "2", "3", "4"]:
             break
         else:
             hidastulostus("Invalid selection, please try again!")
@@ -44,7 +44,7 @@ def nainen():
     elif valinta == "2":
         hidastulostus("you bought your wife a moomin candy box. She felt nostalgic.")
     elif valinta == "3":
-        hidastulostus("You wife got tired of your bull crap. She left you.")
+        hidastulostus("You wife got tired of your bullcrap. She left you.")
     elif valinta == "4":
         hidastulostus("Your just a man you dont know anything about perfumes.")
         hidastulostus("Your wife hates the perfume but appreciated the thought.")

@@ -1,5 +1,6 @@
 import sys
 import time
+import random
 
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
@@ -38,15 +39,8 @@ def stuertti():
         hidastulostus("Vieruskaverisi ajattelee sinua köyhäksi 😅")
 
 
-import sys
-import time
-import random
 
-def hidastulostus(teksti, nopeus=0.03):
-    for c in teksti + "\n":
-        sys.stdout.write(c)
-        sys.stdout.flush()
-        time.sleep(nopeus)
+
 
 def terrorist():
     hidastulostus("Bad men are trying to kidnap the plane!")
@@ -89,4 +83,100 @@ def terrorist():
         else:
             hidastulostus("Please enter only 1 or 2.")
 
-# Call the function
+
+
+# Call the
+def aliens_invade():
+    hidastulostus("Aliens space ship starts to pull your plane towards it.")
+    hidastulostus("The plane starts to shake and passengers are screaming!")
+    hidastulostus("Plane and the ufo are flying side by side.  ")
+    hidastulostus("The aliens starts to invade your plane")
+    hidastulostus("Are you going to: ")
+    hidastulostus("(1) ask help from the police that sits besides you")
+    hidastulostus("(2) Try to communicate with the aliens")
+    hidastulostus("(3) Rally the passengers to try and fight the aliens!")
+
+    while True:
+        vastaus3 = input("choose 1-3: ")
+        if vastaus3 in ["1","2","3"]:
+            break
+        else:
+            print("Choose 1-3")
+
+    if vastaus3 == "1":
+        hidastulostus("The police suggests that he is going to shoot them, do you: ")
+        hidastulostus("(1) Trust the police with the gun")
+        hidastulostus("(2) Take the gun yourself")
+
+        while True:
+            vastaus4 = input("chose 1-2: ")
+            if vastaus4 in ["1","2"]:
+                break
+            else:
+                print("Choose 1-2")
+
+        if vastaus4 == "1":
+            hidastulostus("The aliens come in to the plane and the police takes his shot")
+            hidastulostus("He misses and the aliens take over")
+            #pelin lopetus
+        elif vastaus4 == "2":
+            hidastulostus("Your practises at the gun range finally pay off and your able top prevent the aliens from taking over the plane.")
+
+    elif vastaus3 == "2":
+        hidastulostus("The aliens invade the plane and you start to communicate with them")
+        hidastulostus("the aliens and yourself were confused about your different languages")
+        hidastulostus("somehow besides your differences you commonly agreed to shake hands and go on with your day.")
+
+    elif vastaus3 == "3":
+        hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. you died. ")
+
+def alien():
+    noppa = random.randint(1,3)
+    while True:
+        if noppa == 1 :
+            hidastulostus("An unidentified flying object flies past you. No one else saw it and your confused.")
+            break
+        elif noppa == 3:
+            aliens_invade()
+
+        elif noppa == 2:
+                hidastulostus("An unidentified flying object flies past you. You start to hear voices that say")
+                hidastulostus('"Why are you occupying our airspace without permission"')
+                hidastulostus("What is that voice in my head?!?!")
+                hidastulostus('"We can hear your thoughts, answer us immediately"')
+                hidastulostus("What will you do?")
+                hidastulostus("(1) Threaten them")
+                hidastulostus("(2) Ignore them")
+
+                while True:
+                    vastaus = input("Choose 1-2: ")
+                    if vastaus in ["1","2"]:
+                        break
+                    else:
+                        print("Please choose 1 or 2")
+
+                if vastaus == "1":
+                    aliens_invade()
+
+                elif vastaus == "2":
+                    hidastulostus('"answer us or we will exterminate you!"')
+                    hidastulostus("(1) ignore them again")
+                    hidastulostus("(2) Tell them that you didnt know about their airspace")
+
+                    while True:
+                        vastaus2 = input("Choose 1-2: ")
+                        if vastaus2 in ["1","2"]:
+                            break
+                        else:
+                            print("Please choose 1 or 2")
+
+                    if vastaus2 == "1":
+                        hidastulostus("the aliens got tired of your bullcrap and exterminated you")
+                        break
+                        #pelin lopetus funktio
+
+                    elif vastaus2 == "2":
+                        hidastulostus('"we didnt know your that stupid"')
+                        break
+
+alien()
