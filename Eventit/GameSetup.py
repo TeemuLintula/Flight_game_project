@@ -37,7 +37,7 @@ if not result:
     sql = "INSERT INTO game (screen_name) VALUES (%s)"
     locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
     moneysetsql = "UPDATE game SET money = 1000 WHERE screen_name = %s"
-    basesetsql = "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s,'EUX3')"
+    basesetsql = "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s,'EFHK')"
     addplanesql = "INSERT INTO airplane (game_id) VALUES(%s)"
     planesql = "UPDATE airplane SET ruuma = 1, moottori = 1, istuinpaikat = 1 WHERE game_id = %s"
     cursor.execute(sql, (name,))
