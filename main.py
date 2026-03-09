@@ -8,9 +8,12 @@ from Eventit import HomeBase
 
 def calculateDistance(location, destination):
     distance = geodesic((location[0][2], location[0][3]), (destination[0][2], destination[0][3])).kilometers
-    #laskee käytetyn co2
+    co = int(distance / 10)
+    print(f"Distance flought {int(distance)}km and co2 consumed {co}")
+    cosql = f"UPDATE game SET co2_consumed = co2_consumed + {co} WHERE screen_name = %s"
+    GameSetup.cursor.execute(cosql, (GameSetup.name,))
     #laskee kuluneen ajan -> kasvit kasvavat basessa
-    print(f"{distance}km")
+    return distance
 def newMission():
     print("-----------------------------------------------------------------------------------------------")
     print("Your new mission is: ", Current_mission["Name"])
@@ -31,6 +34,7 @@ def newMission():
             print("Job will pay you: ", Current_mission["Pay"], "Euros/Kilo")
 
 def missionFLight():
+    distance = 0
     print("-----------------------------------------------------------------------------------------------")
     print(f"You are flying to {Current_mission['Location'][0][0]}")
     for i in range(0, 5):
@@ -38,7 +42,7 @@ def missionFLight():
         time.sleep(1)
         #Tässä kutsuu arvonnan
     print(f"You arrived to {Current_mission['Location'][0][0]}")
-    calculateDistance(Current_mission["Location"], Current_mission["Destination"])
+    distance += calculateDistance(Current_mission["Location"], Current_mission["Destination"])
     if Current_mission["Cargo"] == Mission.CargoType.HUMANS or Current_mission["Cargo"] == Mission.CargoType.ILLEGAL_HUMANS:
         print("Taking in passengers")
     else:
@@ -51,6 +55,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
+        # Tässä kutsuu arvonnan
     print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
 
 
