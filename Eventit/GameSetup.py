@@ -26,8 +26,6 @@ global name
 name = input("Kerro nimesi: ")
 cursor = yhteys.cursor()
 
-cursor = yhteys.cursor()
-
 # Tarkistaa onko pelaaja tietokannassa, jos ei ole luodaan uusi pelaaja
 cursor = yhteys.cursor()
 id_game = "SELECT id FROM game WHERE screen_name = %s"
@@ -39,10 +37,14 @@ if not result:
     sql = "INSERT INTO game (screen_name) VALUES (%s)"
     locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
     moneysetsql = "UPDATE game SET money = 1000 WHERE screen_name = %s"
+    basesetsql = "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s,'EUX3')"
     cursor.execute(sql, (name,))
     cursor.execute(locaddsql, (name,))
     cursor.execute(moneysetsql, (name,))
     yhteys.commit()
+    cursor.execute(id_game, (name,))
+    result = cursor.fetchone()
+    cursor.execute(basesetsql, (result[0],))
     print(f"Uusi pelaaja {name} luotu tietokantaan")
     print("-------------------------------------------------------------------------------------")
     LORE.lore(name)

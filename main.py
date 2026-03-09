@@ -1,7 +1,14 @@
 import random
 import time
+import geopy
+from geopy.distance import Distance
+
 from Eventit import GameSetup
 from Eventit import Mission
+from Eventit import HomeBase
+
+def calculateDistance(location, destination):
+    distance = Distance(location)
 def newMission():
     print("-----------------------------------------------------------------------------------------------")
     print("Your new mission is: ", Current_mission["Name"])
@@ -27,6 +34,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
+        #Tässä kutsuu arvonnan
     print(f"You arrived to {Current_mission['Location'][0][0]}")
     if Current_mission["Cargo"] == Mission.CargoType.HUMANS or Current_mission["Cargo"] == Mission.CargoType.ILLEGAL_HUMANS:
         print("Taking in passengers")
@@ -35,6 +43,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
+        #lentokenttä eventit tähän
     print(f"You are flying to {Current_mission['Destination'][0][0]}")
     for i in range(0, 5):
         print(".")
@@ -83,34 +92,4 @@ while True:
             print(".")
             time.sleep(1)
         print(f"You arrived to {selectedBase}")
-        # home_base valikko, jossa voit tehdä basessa eri asioita
-        while True:
-            plantschecksql = "SELECT plants FROM home_base WHERE name = %s"
-            GameSetup.cursor.execute(plantschecksql, (selectedBase,))
-            plants = GameSetup.cursor.fetchone()[0]
-            print(f"You have {plants} plants in this base")
-            vastaus = int(input("1. Select new mission 2. Change base 3. Sleep 4. Sell plants from this base for 50 euros/plant: "))
-            if vastaus == 1:
-                break
-            elif vastaus == 2:
-                for base in range(len(homebases)):
-                    print(f"{homebases[base]} {base}")
-                selectedBase = homebases[int(input("Select base number: "))]
-                print("-----------------------------------------------------------------------------------------------")
-                print(f"You are flying to {selectedBase}")
-                for i in range(0, 5):
-                    print(".")
-                    time.sleep(1)
-                print(f"You arrived to {selectedBase}")
-            elif vastaus == 3:
-                print("You slept for 8 hours")
-                for i in range(0, 5):
-                    print(".")
-                time.sleep(1)
-                print("You feel refreshed and ready to fly!")
-            elif vastaus == 4:
-                moneyaddsql = "UPDATE game SET money = money + %s WHERE screen_name = %s"
-                GameSetup.cursor.execute(moneyaddsql, (50 * plants, GameSetup.name,))
-                plantssellsql = "UPDATE home_base SET plants = 0 WHERE name = %s"
-                GameSetup.cursor.execute(plantssellsql, (selectedBase,))
-                print(f"You sold {plants} plants from this base for {50 * plants} euros")
+        HomeBase.homeBase(GameSetup, selectedBase)
