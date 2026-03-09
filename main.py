@@ -1,14 +1,16 @@
 import random
 import time
-import geopy
-from geopy.distance import Distance
+from geopy.distance import geodesic
 
 from Eventit import GameSetup
 from Eventit import Mission
 from Eventit import HomeBase
 
 def calculateDistance(location, destination):
-    distance = Distance(location)
+    distance = geodesic((location[0][2], location[0][3]), (destination[0][2], destination[0][3])).kilometers
+    #laskee käytetyn co2
+    #laskee kuluneen ajan -> kasvit kasvavat basessa
+    print(f"{distance}km")
 def newMission():
     print("-----------------------------------------------------------------------------------------------")
     print("Your new mission is: ", Current_mission["Name"])
@@ -36,6 +38,7 @@ def missionFLight():
         time.sleep(1)
         #Tässä kutsuu arvonnan
     print(f"You arrived to {Current_mission['Location'][0][0]}")
+    calculateDistance(Current_mission["Location"], Current_mission["Destination"])
     if Current_mission["Cargo"] == Mission.CargoType.HUMANS or Current_mission["Cargo"] == Mission.CargoType.ILLEGAL_HUMANS:
         print("Taking in passengers")
     else:

@@ -25,10 +25,10 @@ def GenerateMission():
         Legal_Cargo = [CargoType.HUMANS, CargoType.CARGO]
         Cargo = random.choice(Legal_Cargo)
         GameSetup.cursor.execute(
-            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+            "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
         Location = GameSetup.cursor.fetchall()
         GameSetup.cursor.execute(
-            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
+            "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
         Destination = GameSetup.cursor.fetchall()
         if Cargo == CargoType.HUMANS:
             Cargo_amount = random.randint(5, 100)
@@ -42,10 +42,10 @@ def GenerateMission():
         Illegal_Cargo = [CargoType.ILLEGAL_HUMANS, CargoType.TAX_FREE_SPICES]
         Cargo = random.choice(Illegal_Cargo)
         GameSetup.cursor.execute(
-            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'AF' or airport.continent = 'SA' or airport.iso_country = 'SY' or airport.iso_country = 'AF') ORDER BY RAND() LIMIT 1;")
+            "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'AF' or airport.continent = 'SA' or airport.iso_country = 'SY' or airport.iso_country = 'AF') ORDER BY RAND() LIMIT 1;")
         Location = GameSetup.cursor.fetchall()
         GameSetup.cursor.execute(
-            "SELECT airport.name, country.name FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'EU' or airport.continent = 'NA' or airport.iso_country = 'CN' or airport.iso_country = 'IN') ORDER BY RAND() LIMIT 1;")
+            "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'EU' or airport.continent = 'NA' or airport.iso_country = 'CN' or airport.iso_country = 'IN') ORDER BY RAND() LIMIT 1;")
         Destination = GameSetup.cursor.fetchall()
         if Cargo == CargoType.ILLEGAL_HUMANS:
             Cargo_amount = random.randint(5, 100)
