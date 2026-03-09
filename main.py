@@ -7,12 +7,12 @@ from Eventit import Mission
 from Eventit import HomeBase
 
 def calculateDistance(location, destination):
-    distance = geodesic((location[0][2], location[0][3]), (destination[0][2], destination[0][3])).kilometers
+    distance = geodesic((location[2], location[3]), (destination[2], destination[3])).kilometers
     co = int(distance / 10)
     print(f"Distance flought {int(distance)}km and co2 consumed {co}")
     cosql = f"UPDATE game SET co2_consumed = co2_consumed + {co} WHERE screen_name = %s"
     GameSetup.cursor.execute(cosql, (GameSetup.name,))
-    #laskee kuluneen ajan -> kasvit kasvavat basessa
+    #laskee kuluneen ajan -> kasvit kasvavat basessa ja lisäävät co_2 limittiä
     return distance
 def newMission():
     print("-----------------------------------------------------------------------------------------------")
@@ -40,9 +40,9 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        #Tässä kutsuu arvonnan
+        # During flight tähän
     print(f"You arrived to {Current_mission['Location'][0][0]}")
-    distance += calculateDistance(Current_mission["Location"], Current_mission["Destination"])
+    distance += calculateDistance(currentLocation, Current_mission["Location"][0])
     if Current_mission["Cargo"] == Mission.CargoType.HUMANS or Current_mission["Cargo"] == Mission.CargoType.ILLEGAL_HUMANS:
         print("Taking in passengers")
     else:
@@ -55,14 +55,17 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        # Tässä kutsuu arvonnan
+        # During flight tähän
     print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
-
+    distance += calculateDistance(Current_mission["Location"][0], Current_mission["Destination"][0])
+    GameSetup.cursor.execute(f"UPDATE game SET location = '{Current_mission["Destination"][0][4]}' where screen_name = '{GameSetup.name}'")
 
 while True:
     vastaus = 1
     missions = []
-    print("You are now at...") #Tähän pelaajan nykyinen sijainti
+    GameSetup.cursor.execute(f"select airport.name, country.name, airport.latitude_deg, airport.longitude_deg from airport, country, game where screen_name = '{GameSetup.name}' and game.location = airport.ident and airport.iso_country = country.iso_country")
+    currentLocation = GameSetup.cursor.fetchone()
+    print(f"You are now at {currentLocation[0]} {currentLocation[1]}") #Tähän pelaajan nykyinen sijainti
     vastaus = int(input("1. Select new mission / 2. Fly to homebase: "))
     if vastaus == 1:
         while True:
@@ -100,4 +103,5 @@ while True:
             print(".")
             time.sleep(1)
         print(f"You arrived to {selectedBase}")
+        #Homebase eventti (toisen vois vaikka laittaa sinne kun käy nukkumassa)
         HomeBase.homeBase(GameSetup, selectedBase)
