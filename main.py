@@ -73,7 +73,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        airport_eventit.randomevent_a()
+        airport_eventit.randomevent_a(GameSetup)
 
     if Current_mission["Cargo"] == Mission.CargoType.CARGO:
         print(f"{cargoAmount * 1000}kg of cargo loaded in")

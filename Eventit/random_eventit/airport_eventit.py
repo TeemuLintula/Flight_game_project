@@ -55,7 +55,13 @@ def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
 
-def randomevent_a():
+def randomevent_a(GameSetup):
     luku = random.randint(1,50)
-    if luku == 1:
+    GameSetup.cursor.execute(f"select game.co2_budget, game.co2_consumed from game where game.screen_name = '{GameSetup.name}'")
+    budget = GameSetup.cursor.fetchall()
+    budget = budget[0][0] - budget[0][1]
+    if budget < 0:
+        if luku <= 5:
+            #Tähän se otettiin kiinni jne
+    elif luku == 1:
         randomrandomiser()
