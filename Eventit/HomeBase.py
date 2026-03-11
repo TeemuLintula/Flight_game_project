@@ -124,6 +124,7 @@ def homeBase(GameSetup, selectedBase):
                             if int(vastaus) in range(0, len(basesNotOwned)):
                                 selectedBase = basesNotOwned[int(vastaus)]
                                 if money >= selectedBase[1]:
+                                    money -= selectedBase[1]
                                     GameSetup.cursor.execute(f"UPDATE game SET money = {money} where game.screen_name = '{GameSetup.name}'")
                                     GameSetup.cursor.execute(f"INSERT INTO game_home_base (game_id, base_ident) VALUES ({id_game},'{selectedBase[3]}')")
 
