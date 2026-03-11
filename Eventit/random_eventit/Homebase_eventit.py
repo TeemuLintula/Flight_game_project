@@ -97,6 +97,6 @@ def randomrandomiser():
     tapahtuma()
 
 def randomevent_h():
-    luku = random.randint(1,50)
+    luku = random.randint(1,10)
     if luku == 1:
         randomrandomiser()
