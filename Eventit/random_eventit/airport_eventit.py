@@ -52,7 +52,11 @@ def nainen():
 
 tapahtumat = [nainen, tulli,]
 
-def randomevent():
+def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
-randomevent()
+
+def randomevent_a():
+    luku = random.randint(1,50)
+    if luku == 1:
+        randomrandomiser()

@@ -189,6 +189,11 @@ def alien():
 
 tapahtumat = [stuertti, terrorist, alien]
 
-def randomevent():
+def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
+
+def randomevent_d():
+    luku = random.randint(1,50)
+    if luku == 1:
+        randomrandomiser()

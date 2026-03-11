@@ -8,6 +8,8 @@ from Eventit import HomeBase
 from Eventit import airport_eventit
 from Eventit import duringflight_eventit
 from Eventit import homebase_eventit
+from Eventit.random_eventit.airport_eventit import randomevent_a
+
 
 def calculateDistance(location, destination):
     distance = geodesic((location[2], location[3]), (destination[2], destination[3])).kilometers
@@ -47,7 +49,8 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        # During flight tähän
+        randomevent_d()
+        #kutsuu random event 1/50
     print(f"You arrived to {Current_mission['Location'][0][0]}")
     co = 0
     co += calculateDistance(currentLocation, Current_mission["Location"][0])
@@ -72,7 +75,8 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        #lentokenttä eventit tähän
+        randomevent_a()
+        #1/50 random event airport
 
     if Current_mission["Cargo"] == Mission.CargoType.CARGO:
         print(f"{cargoAmount * 1000}kg of cargo loaded in")
