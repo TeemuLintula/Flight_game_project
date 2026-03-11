@@ -1,9 +1,7 @@
 import random
 import time
-import math
 from Eventit.random_eventit import Homebase_eventit
 def homeBase(GameSetup, selectedBase):
-    # home_base valikko, jossa voit tehdä basessa eri asioita
     Homebase_eventit.randomevent_h()
     while True:
         vastaus = int(input("1. Exit base 2. Sleep 3. Open PC 4. Check plantations: "))
@@ -30,14 +28,15 @@ def homeBase(GameSetup, selectedBase):
             #print(f"You sold {plants} plants from this base for {50 * plants} euros")
         elif vastaus == 3:
             while True:
+                GameSetup.cursor.execute(f"select game.money from game where game.screen_name = '{GameSetup.name}'")
+                money = GameSetup.cursor.fetchall()
+                money = money[0][0]
+
                 print("-----------------------------------------------------------------------------------------------")
                 vastaus = int(input("1. Upgrade airplane 2. Buy new properties 3. Exit: "))
                 if vastaus == 1:
                     GameSetup.cursor.execute(f"select airplane.ruuma, airplane.moottori, airplane.istuinpaikat from airplane, game where airplane.game_id = game.id and game.screen_name = '{GameSetup.name}'")
                     allparts = GameSetup.cursor.fetchall()
-                    GameSetup.cursor.execute(f"select game.money from game where game.screen_name = '{GameSetup.name}'")
-                    money = GameSetup.cursor.fetchall()
-                    money = money[0][0]
                     storageLimit = allparts[0][0] * 20
                     fuelUsage = 5 / allparts[0][1]
                     seats = allparts[0][2] * 20
@@ -49,14 +48,17 @@ def homeBase(GameSetup, selectedBase):
                     print(f"Cargo level: {allparts[0][0]} (Storage capacity: {storageLimit * 1000}kg) \n" 
                           f"Motor level: {allparts[0][1]} (Uses {fuelUsage:.1f} units of fuel per kilometer) \n"
                           f"Seats level: {allparts[0][2]} (Number of seats: {seats})")
-                    if allparts[0][0] <= 5:
+                    if allparts[0][0] < 5:
                         print(f"1. Upgrade Cargo -> {(allparts[0][0] + 1) * 20 * 1000}kg capacity for: {storagePrice} euros")
-                    if allparts[0][1] <= 5:
+                    if allparts[0][1] < 5:
                         print(f"2. Upgrade Engine -> {5 / (allparts[0][1] + 1):.1f} Units of fuel per kilometer for: {enginePrice} euros")
-                    if allparts[0][2] <= 5:
+                    if allparts[0][2] < 5:
                         print(f"3. Upgrade Seats -> {(allparts[0][2] + 1) * 20} seats for: {seatprice} euros")
                     vastaus = int(input("1. Upgrade Cargo 2. Upgrade Engine 3. Upgrade Seats 4. Exit: "))
                     if vastaus == 1:
+                        if allparts[0][0] == 5:
+                            print("No new cargo uprgrades avaiable")
+                            break
                         if money >= storagePrice:
                             money -= storagePrice
                             GameSetup.cursor.execute(f"UPDATE airplane, game SET ruuma = ruuma + 1 where airplane.game_id = game.id and game.screen_name = '{GameSetup.name}'")
@@ -69,6 +71,9 @@ def homeBase(GameSetup, selectedBase):
                         else:
                             print("Insufficient funds")
                     if vastaus == 2:
+                        if allparts[0][1] == 5:
+                            print("No new engine uprgrades avaiable")
+                            break
                         if money >= enginePrice:
                             money -= enginePrice
                             GameSetup.cursor.execute(f"UPDATE airplane, game SET moottori = moottori + 1 where airplane.game_id = game.id and game.screen_name = '{GameSetup.name}'")
@@ -81,6 +86,9 @@ def homeBase(GameSetup, selectedBase):
                         else:
                             print("Insufficient funds")
                     if vastaus == 3:
+                        if allparts[0][2] == 5:
+                            print("No new seat uprgrades avaiable")
+                            break
                         if money >= seatprice:
                             money -= seatprice
                             GameSetup.cursor.execute(f"UPDATE airplane, game SET istuinpaikat = istuinpaikat + 1 where airplane.game_id = game.id and game.screen_name = '{GameSetup.name}'")
@@ -93,6 +101,34 @@ def homeBase(GameSetup, selectedBase):
                         else:
                             print("Insufficient funds")
                 elif vastaus == 2:
-                    break
-                elif vastaus == 3:
+                    id_game = "SELECT id FROM game WHERE screen_name = %s"
+                    GameSetup.cursor.execute(id_game, (GameSetup.name,))
+                    id_game = GameSetup.cursor.fetchone()[0]
+                    GameSetup.cursor.execute(f"SELECT home_base.name, home_base.price, home_base.continent, home_base.ident from home_base where ident NOT IN (select game_home_base.base_ident from game_home_base where game_id = {id_game})")
+                    basesNotOwned = [base for base in GameSetup.cursor.fetchall()]
+                    print("-----------------------------------------------------------------------------------------------")
+                    print(f"Current balance: {money} Euros")
+                    if len(basesNotOwned) == 0:
+                        print("There is no new properties to buy")
+                    else:
+                        print("Properies for sale: ")
+                        for base in range(len(basesNotOwned)):
+                            print(f"{base}. {basesNotOwned[base][0]}/{basesNotOwned[base][2]}// {basesNotOwned[base][1]}Euros")
+                        vastaus = input("Select base number or press e to exit: ")
+                        if vastaus == "e":
+                            break
+                        else:
+                            if int(vastaus) in range(0, len(basesNotOwned)):
+                                selectedBase = basesNotOwned[int(vastaus)]
+                                if money >= selectedBase[1]:
+                                    GameSetup.cursor.execute(f"UPDATE game SET money = {money} where game.screen_name = '{GameSetup.name}'")
+                                    GameSetup.cursor.execute(f"INSERT INTO game_home_base (game_id, base_ident) VALUES ({id_game},'{selectedBase[3]}')")
+
+                                    print("-----------------------------------------------------------------------------------------------")
+                                    print(f"You acquired a new base: {selectedBase[0]}/{selectedBase[2]} for {selectedBase[1]}Euros")
+                                    break
+                                else:
+                                    print("insufficient funds")
+                                    break
+                else:
                     break
