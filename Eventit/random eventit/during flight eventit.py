@@ -102,7 +102,7 @@ def aliens_invade():
         if vastaus3 in ["1","2","3"]:
             break
         else:
-            print("Choose 1-3")
+            print("Please choose 1-3")
 
     if vastaus3 == "1":
         hidastulostus("The police suggests that he is going to shoot them, do you: ")
@@ -110,27 +110,31 @@ def aliens_invade():
         hidastulostus("(2) Take the gun yourself")
 
         while True:
-            vastaus4 = input("chose 1-2: ")
-            if vastaus4 in ["1","2"]:
+            vastaus3 = input("choose 1-2: ")
+            if vastaus3 in ["1","2"]:
                 break
             else:
-                print("Choose 1-2")
+                print("Please choose 1-2")
 
-        if vastaus4 == "1":
+        if vastaus3 == "1":
             hidastulostus("The aliens come in to the plane and the police takes his shot")
             hidastulostus("He misses and the aliens take over")
-            #pelin lopetus
-        elif vastaus4 == "2":
+            return
+
+        elif vastaus3 == "2":
             hidastulostus("Your practises at the gun range finally pay off and your able top prevent the aliens from taking over the plane.")
+            return
+
 
     elif vastaus3 == "2":
         hidastulostus("The aliens invade the plane and you start to communicate with them")
         hidastulostus("the aliens and yourself were confused about your different languages")
         hidastulostus("somehow besides your differences you commonly agreed to shake hands and go on with your day.")
+        return
 
     elif vastaus3 == "3":
-        hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. you died. ")
-
+        hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. you died.")
+        return
 def alien():
     noppa = random.randint(1,3)
     while True:
@@ -139,6 +143,7 @@ def alien():
             break
         elif noppa == 3:
             aliens_invade()
+            break
 
         elif noppa == 2:
                 hidastulostus("An unidentified flying object flies past you. You start to hear voices that say")
@@ -158,6 +163,7 @@ def alien():
 
                 if vastaus == "1":
                     aliens_invade()
+                    break
 
                 elif vastaus == "2":
                     hidastulostus('"answer us or we will exterminate you!"')
