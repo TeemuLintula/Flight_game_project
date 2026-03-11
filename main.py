@@ -5,6 +5,9 @@ from geopy.distance import geodesic
 from Eventit import GameSetup
 from Eventit import Mission
 from Eventit import HomeBase
+from Eventit import airport_eventit
+from Eventit import duringflight_eventit
+from Eventit import homebase_eventit
 
 def calculateDistance(location, destination):
     distance = geodesic((location[2], location[3]), (destination[2], destination[3])).kilometers

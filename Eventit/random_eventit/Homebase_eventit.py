@@ -93,6 +93,7 @@ def jehovat():
 tapahtumat = [jehovat, naapuri, karhuryhma]
 
 
+
 def randomevent():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
