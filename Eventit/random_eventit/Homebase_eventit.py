@@ -23,8 +23,8 @@ def naapuri():
     hidastulostus("Your neighbour Greg is knocking on your hangar door. ")
 
     while True:
-        naapuri = input("Will you open the door? (yes/no): ")
-        if naapuri.upper() == "YES":
+        naapur = input("Will you open the door? (yes/no): ")
+        if naapur.upper() == "YES":
             hidastulostus("Greg: Oh hello there!\n"
                  "I was just thinking, why it's smelling so weird in here?\n"
                  "Could you stop whatever produces these smells?")
@@ -35,7 +35,7 @@ def naapuri():
             elif vastaus1.upper() == "NO":
                 hidastulostus("Greg: Oh... this won't be the last time your hearing from me... ")
                 break
-        elif naapuri.upper() == "NO":
+        elif naapur.upper() == "NO":
             hidastulostus('"Greg" is punching door 3 more times. After that he leaves.')
             break
         else:
