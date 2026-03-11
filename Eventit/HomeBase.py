@@ -19,13 +19,12 @@ def homeBase(GameSetup, selectedBase):
             GameSetup.cursor.execute(plantschecksql, (selectedBase[0],))
             plants = GameSetup.cursor.fetchone()
             print(f"You have {plants[0]} plants in this base")
-
-            #Tähän logiikka
-            #moneyaddsql = "UPDATE game SET money = money + %s WHERE screen_name = %s"
-            #GameSetup.cursor.execute(moneyaddsql, (50 * plants, GameSetup.name,))
-            #plantssellsql = "UPDATE home_base SET plants = 0 WHERE name = %s"
-            #GameSetup.cursor.execute(plantssellsql, (selectedBase[0],))
-            #print(f"You sold {plants} plants from this base for {50 * plants} euros")
+            sellplants = input("Press enter to sell all plants: ")
+            if sellplants == "":
+                sellprice = plants[0] * 50
+                GameSetup.cursor.execute(f"UPDATE game SET money = money + {sellprice} WHERE screen_name = '{GameSetup.name}'")
+                GameSetup.cursor.execute(f"UPDATE home_base SET plants = 0 WHERE name = '{selectedBase[0]}'")
+                print(f"You sold {plants[0]} plants from this base for {sellprice} euros")
         elif vastaus == 3:
             while True:
                 GameSetup.cursor.execute(f"select game.money from game where game.screen_name = '{GameSetup.name}'")
