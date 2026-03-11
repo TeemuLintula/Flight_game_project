@@ -2,8 +2,6 @@ import random
 import sys
 import time
 
-def skinwalker():
-
 
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
@@ -94,7 +92,11 @@ tapahtumat = [jehovat, naapuri, karhuryhma]
 
 
 
-def randomevent():
+def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
-randomevent()
+
+def randomevent_h():
+    luku = random.randint(1,50)
+    if luku == 1:
+        randomrandomiser()

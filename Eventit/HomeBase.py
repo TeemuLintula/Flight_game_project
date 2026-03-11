@@ -1,7 +1,9 @@
 import random
 import time
+from Eventit import homebase_eventit
 def homeBase(GameSetup, selectedBase):
     # home_base valikko, jossa voit tehdä basessa eri asioita
+    randomevent_h()
     while True:
         vastaus = int(input("1. Exit base 2. Sleep 3. Open PC 4. Check plantations: "))
         if vastaus == 1:
@@ -11,7 +13,7 @@ def homeBase(GameSetup, selectedBase):
             for i in range(0, 5):
                 print(".")
                 time.sleep(1)
-            #Homebase event tsäänssi
+            randomevent_h()
             print("You feel refreshed and ready to fly!")
         elif vastaus == 4:
             plantschecksql = "SELECT plants FROM home_base WHERE name = %s"

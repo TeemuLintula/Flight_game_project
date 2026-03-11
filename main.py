@@ -8,7 +8,7 @@ from Eventit import HomeBase
 from Eventit import airport_eventit
 from Eventit import duringflight_eventit
 from Eventit import homebase_eventit
-from Eventit.random_eventit.airport_eventit import randomevent_a
+
 
 
 def calculateDistance(location, destination):
@@ -50,7 +50,7 @@ def missionFLight():
         print(".")
         time.sleep(1)
         randomevent_d()
-        #kutsuu random event 1/50
+
     print(f"You arrived to {Current_mission['Location'][0][0]}")
     co = 0
     co += calculateDistance(currentLocation, Current_mission["Location"][0])
@@ -76,7 +76,6 @@ def missionFLight():
         print(".")
         time.sleep(1)
         randomevent_a()
-        #1/50 random event airport
 
     if Current_mission["Cargo"] == Mission.CargoType.CARGO:
         print(f"{cargoAmount * 1000}kg of cargo loaded in")
@@ -94,7 +93,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        # During flight tähän
+        randomevent_d()
 
 
     print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
@@ -158,5 +157,4 @@ while True:
         baseident = GameSetup.cursor.fetchone()
         #GameSetup.cursor.execute(f"UPDATE game SET location = '{Current_mission["Destination"][0][4]}' where screen_name = '{GameSetup.name}'")
         GameSetup.cursor.execute(f"UPDATE game SET location = '{baseident[0]}' where screen_name = '{GameSetup.name}'")
-        #Homebase eventti (toisen vois vaikka laittaa sinne kun käy nukkumassa)
         HomeBase.homeBase(GameSetup, selectedBase)

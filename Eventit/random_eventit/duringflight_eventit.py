@@ -194,6 +194,6 @@ def randomrandomiser():
     tapahtuma()
 
 def randomevent_d():
-    luku = random.randint(1,50)
+    luku = random.randint(1,100)
     if luku == 1:
         randomrandomiser()
