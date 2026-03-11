@@ -2,6 +2,7 @@ import sys
 import time
 import random
 
+
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
         sys.stdout.write(c)
@@ -28,15 +29,15 @@ def stuertti():
 
 
     if valinta == "1":
-        hidastulostus("Valitsit pizzan 🍕")
+        hidastulostus("Valitsit pizzan ")
     elif valinta == "2":
-        hidastulostus("Valitsit hampurilaisen 🍔")
+        hidastulostus("Valitsit hampurilaisen ")
     elif valinta == "3":
-        hidastulostus("Valitsit salaatin 🥗")
+        hidastulostus("Valitsit salaatin ")
     elif valinta == "4":
-        hidastulostus("Valitsit pastan 🍝")
+        hidastulostus("Valitsit pastan ")
     elif valinta == "5":
-        hidastulostus("Vieruskaverisi ajattelee sinua köyhäksi 😅")
+        hidastulostus("Vieruskaverisi ajattelee sinua köyhäksi ")
 
 
 
@@ -179,4 +180,10 @@ def alien():
                         hidastulostus('"we didnt know your that stupid"')
                         break
 
-alien()
+
+tapahtumat = [stuertti, terrorist, alien]
+
+def randomevent():
+    tapahtuma = random.choice(tapahtumat)
+    tapahtuma()
+randomevent()
