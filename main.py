@@ -5,10 +5,8 @@ from geopy.distance import geodesic
 from Eventit import GameSetup
 from Eventit import Mission
 from Eventit import HomeBase
-from Eventit import airport_eventit
-from Eventit import duringflight_eventit
-from Eventit import homebase_eventit
-
+from Eventit.random_eventit import airport_eventit
+from Eventit.random_eventit import duringflight_eventit
 
 
 def calculateDistance(location, destination):
@@ -157,4 +155,5 @@ while True:
         baseident = GameSetup.cursor.fetchone()
         #GameSetup.cursor.execute(f"UPDATE game SET location = '{Current_mission["Destination"][0][4]}' where screen_name = '{GameSetup.name}'")
         GameSetup.cursor.execute(f"UPDATE game SET location = '{baseident[0]}' where screen_name = '{GameSetup.name}'")
+        #Homebase eventti (toisen vois vaikka laittaa sinne kun käy nukkumassa)
         HomeBase.homeBase(GameSetup, selectedBase)
