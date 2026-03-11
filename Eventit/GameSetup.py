@@ -63,12 +63,8 @@ def endGame():
      budget = cursor.fetchone()
      if budget[0][1] - budget[0][2] <= 0:
           print("You have run out of co2 budget. Game over.")
-          print("Game over")
      elif budget[0][0] <= 0:
           print("You have run out of money. Game over.")
-          print("Game over")
-     else:
-          print("Congratulations! You have completed the game with a balance of {} Euros and {} co2.".format(budget[0][0], budget[0][1] - budget[0][2]))
+     print("Game over. Thanks for playing!")
      playerdropsql = "UPDATE game SET screen_name = NULL WHERE screen_name = %s"
      cursor.execute(playerdropsql, (name,))
-     
