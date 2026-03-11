@@ -1,4 +1,5 @@
 import mysql.connector
+import sys
 from Eventit import LORE
 from mysql.connector import Error
 print("Tervetuloa lentopeliin")
@@ -58,4 +59,6 @@ else:
 def endGame():
      playerdropsql = "UPDATE game SET screen_name = NULL WHERE screen_name = %s"
      cursor.execute(playerdropsql, (name,))
+     print("..GAME OVER..")
+     sys.exit()
      
