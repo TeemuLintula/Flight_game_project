@@ -2,7 +2,7 @@ import mysql.connector
 from Eventit import LORE
 from mysql.connector import Error
 print("Tervetuloa lentopeliin")
-#Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan
+#Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan  
 while True:
      try:
           yhteys = mysql.connector.connect(
@@ -54,3 +54,21 @@ if not result:
     LORE.lore(name)
 else:
     print(f"Tervetuloa takaisin {name}!")
+
+def endGame():
+     co2sql = "SELECT co2_budget, co2_consumed FROM game WHERE screen_name = %s"
+     moneyfetchsql = "SELECT money FROM game WHERE screen_name = %s"
+     cursor.execute(moneyfetchsql, (name,))
+     cursor.execute(co2sql, (name,))
+     budget = cursor.fetchone()
+     if budget[0][1] - budget[0][2] <= 0:
+          print("You have run out of co2 budget. Game over.")
+          print("Game over")
+     elif budget[0][0] <= 0:
+          print("You have run out of money. Game over.")
+          print("Game over")
+     else:
+          print("Congratulations! You have completed the game with a balance of {} Euros and {} co2.".format(budget[0][0], budget[0][1] - budget[0][2]))
+     playerdropsql = "UPDATE game SET screen_name = NULL WHERE screen_name = %s"
+     cursor.execute(playerdropsql, (name,))
+     

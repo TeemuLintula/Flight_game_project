@@ -10,17 +10,16 @@ def hidastulostus(teksti, nopeus=0.03):
 
 def tulli():
 
-    print("Customs are asking you to verify cargo")
+    hidastulostus("Customs are asking you to verify cargo")
 
     while True:
         vastaus = input("Are you willing to show cargo? (yes/no) ")
         if vastaus.upper() == "YES":
-            print('Customs: ("checking")')
-            print("You're good to go! ")
+            hidastulostus('Customs: ("checking")')
+            hidastulostus("You're good to go!")
             break
         elif vastaus.upper() == "NO":
-            print("Customs: We're going to get you to prison")
-            #pelin lopetus funktio
+            hidastulostus("Customs: We will let this slide for just this time...")
             break
         else:
             print("Please enter yes or no")
@@ -56,7 +55,13 @@ def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
 
-def randomevent_a():
+def randomevent_a(GameSetup):
     luku = random.randint(1,50)
-    if luku == 1:
+    GameSetup.cursor.execute(f"select game.co2_budget, game.co2_consumed from game where game.screen_name = '{GameSetup.name}'")
+    budget = GameSetup.cursor.fetchall()
+    budget = budget[0][0] - budget[0][1]
+    if budget < 0:
+        if luku <= 5:
+            #Tähän se otettiin kiinni jne
+    elif luku == 1:
         randomrandomiser()
