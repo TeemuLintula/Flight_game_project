@@ -100,7 +100,7 @@ def homeBase(GameSetup, selectedBase):
                             for i in range(0, 5):
                                 print(".")
                             time.sleep(1)
-                            print(f"Install succesfull you have now {(allparts[0][2]) * 20} Seats in your plane")
+                            print(f"Install succesfull you have now {(allparts[0][2] + 1) * 20} Seats in your plane")
                         else:
                             print("Insufficient funds")
                 elif vastaus == 2:
