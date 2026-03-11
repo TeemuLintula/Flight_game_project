@@ -1,9 +1,9 @@
 import random
 import time
-from Eventit import homebase_eventit
+from Eventit.random_eventit import homebase_eventit
 def homeBase(GameSetup, selectedBase):
     # home_base valikko, jossa voit tehdä basessa eri asioita
-    randomevent_h()
+    homebase_eventit.randomevent_h()
     while True:
         vastaus = int(input("1. Exit base 2. Sleep 3. Open PC 4. Check plantations: "))
         if vastaus == 1:

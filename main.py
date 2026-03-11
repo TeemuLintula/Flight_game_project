@@ -47,7 +47,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        randomevent_d()
+        duringflight_eventit.randomevent_d()
 
     print(f"You arrived to {Current_mission['Location'][0][0]}")
     co = 0
@@ -73,7 +73,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        randomevent_a()
+        airport_eventit.randomevent_a()
 
     if Current_mission["Cargo"] == Mission.CargoType.CARGO:
         print(f"{cargoAmount * 1000}kg of cargo loaded in")
@@ -91,7 +91,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        randomevent_d()
+        duringflight_eventit.randomevent_d()
 
 
     print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
@@ -155,5 +155,4 @@ while True:
         baseident = GameSetup.cursor.fetchone()
         #GameSetup.cursor.execute(f"UPDATE game SET location = '{Current_mission["Destination"][0][4]}' where screen_name = '{GameSetup.name}'")
         GameSetup.cursor.execute(f"UPDATE game SET location = '{baseident[0]}' where screen_name = '{GameSetup.name}'")
-        #Homebase eventti (toisen vois vaikka laittaa sinne kun käy nukkumassa)
         HomeBase.homeBase(GameSetup, selectedBase)
