@@ -2,7 +2,7 @@ import random
 import sys
 import time
 
-def skinwalker()
+def skinwalker():
 
 
 def hidastulostus(teksti, nopeus=0.03):
