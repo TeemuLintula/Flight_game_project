@@ -1,7 +1,10 @@
 import random
 import time
 from Eventit.random_eventit import Homebase_eventit
+from Eventit import LORE
 def homeBase(GameSetup, selectedBase):
+    if selectedBase[0] == "Island of the big E":
+        LORE.lore_ending(GameSetup.name)
     Homebase_eventit.randomevent_h()
     while True:
         vastaus = int(input("1. Exit base 2. Sleep 3. Open PC 4. Check plantations: "))
