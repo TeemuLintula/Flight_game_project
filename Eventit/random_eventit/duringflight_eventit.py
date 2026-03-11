@@ -10,34 +10,33 @@ def hidastulostus(teksti, nopeus=0.03):
         time.sleep(nopeus)
 
 def stuertti():
-    hidastulostus("Stuertti tulee kysymään ruokaa!")
-    hidastulostus("Valitse mitä syöt:")
+    hidastulostus("Flight attendant asks you what food you want!")
+    hidastulostus("Choose what you eat:")
     hidastulostus("1 - Pizza")
-    hidastulostus("2 - Hampurilainen")
-    hidastulostus("3 - Salaatti")
+    hidastulostus("2 - Hamburger")
+    hidastulostus("3 - salad")
     hidastulostus("4 - Pasta")
-    hidastulostus("5 - en syö")
+    hidastulostus("5 - im not hungry")
 
-    # kysytään kunnes valinta on oikein
     while True:
-        valinta = input("Anna numero (1-5): ")
+        valinta = input("Choose between (1-5): ")
 
         if valinta in ["1", "2", "3", "4", "5"]:
             break
         else:
-            hidastulostus("Virheellinen valinta, yritä uudestaan!")
+            hidastulostus("Pls enter a number between (1-5)!")
 
 
     if valinta == "1":
-        hidastulostus("Valitsit pizzan ")
+        hidastulostus("You chose the pizza ")
     elif valinta == "2":
-        hidastulostus("Valitsit hampurilaisen ")
+        hidastulostus("You chose the hamburger ")
     elif valinta == "3":
-        hidastulostus("Valitsit salaatin ")
+        hidastulostus("You chose the salad ")
     elif valinta == "4":
-        hidastulostus("Valitsit pastan ")
+        hidastulostus("You chose the pasta ")
     elif valinta == "5":
-        hidastulostus("Vieruskaverisi ajattelee sinua köyhäksi ")
+        hidastulostus("A guy besides you thinks you're poor.")
 
 
 
