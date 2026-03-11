@@ -1,5 +1,6 @@
 import sys
 import time
+import random
 
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
@@ -48,4 +49,10 @@ def nainen():
     elif valinta == "4":
         hidastulostus("Your just a man you dont know anything about perfumes.")
         hidastulostus("Your wife hates the perfume but appreciated the thought.")
-nainen()
+
+tapahtumat = [nainen, tulli,]
+
+def randomevent():
+    tapahtuma = random.choice(tapahtumat)
+    tapahtuma()
+randomevent()

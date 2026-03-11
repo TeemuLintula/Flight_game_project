@@ -4,6 +4,7 @@ import time
 
 def skinwalker()
 
+
 def hidastulostus(teksti, nopeus=0.03):
     for c in teksti + "\n":
         sys.stdout.write(c)
@@ -88,4 +89,11 @@ def jehovat():
 
     elif valinta == "2":
         hidastulostus("Et avaa ovea ja koputus loppuu hetken kuluttua.")
-jehovat()
+
+tapahtumat = [jehovat, naapuri, karhuryhma]
+
+
+def randomevent():
+    tapahtuma = random.choice(tapahtumat)
+    tapahtuma()
+randomevent()

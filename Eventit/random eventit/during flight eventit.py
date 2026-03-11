@@ -186,4 +186,3 @@ tapahtumat = [stuertti, terrorist, alien]
 def randomevent():
     tapahtuma = random.choice(tapahtumat)
     tapahtuma()
-randomevent()
