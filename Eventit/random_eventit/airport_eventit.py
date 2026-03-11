@@ -10,17 +10,16 @@ def hidastulostus(teksti, nopeus=0.03):
 
 def tulli():
 
-    print("Customs are asking you to verify cargo")
+    hidastulostus("Customs are asking you to verify cargo")
 
     while True:
         vastaus = input("Are you willing to show cargo? (yes/no) ")
         if vastaus.upper() == "YES":
-            print('Customs: ("checking")')
-            print("You're good to go! ")
+            hidastulostus('Customs: ("checking")')
+            hidastulostus("You're good to go!")
             break
         elif vastaus.upper() == "NO":
-            print("Customs: We're going to get you to prison")
-            #pelin lopetus funktio
+            hidastulostus("Customs: We will let this slide for just this time...")
             break
         else:
             print("Please enter yes or no")

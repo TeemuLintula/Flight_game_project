@@ -9,22 +9,70 @@ def hidastulostus(teksti, nopeus=0.03):
         sys.stdout.flush()
         time.sleep(nopeus)
 
-def karhuryhma():
-    hidastulostus("Your homebase is being investigated by karhuryhmä ")
-    spice = random.randint(1,1000)
-    hidastulostus(f'Your homebase has {spice} kilograms of spices')
-    if spice > 250:
-        hidastulostus("High chance of being held into custody")
-    elif spice < 250:
-        hidastulostus("Low chance of being held into custody")
-    return
+def skinwalker():
+    hidastulostus('"Someone starts to knock your door"\n')
+    hidastulostus('You start walking towards the door.\n'
+                  'You check through the peephole. You see a pale long man. Over 2 meters tall standing in front of the door.\n'
+                  "You check the time. It's 03:13.\n"
+                  'Pale man says:\n'
+                  '"Can you open the door, I´m starving and it´s very cold over here."\n'
+                  '"What will you do"')
+
+    while True:
+        skinari = input("(1) Let him in\n"
+                        "(2) Question him\n"
+                        "(3) Don't say anything\n"
+                        "(Choose 1-3): ")
+
+        if skinari == "1":
+            hidastulostus("Pale man thanks you.\n"
+                          "Everything seems fine, but just after the man enters he attacks you and you didn't have time to react...")
+            return
+
+        elif skinari == "2":
+            hidastulostus("You ask the pale man:\n"
+                          "Why are you all the way here at this time??\n"
+                          "Pale man says:\n"
+                          '"I´m starving and it´s very cold over here"\n'
+                          'You say:\n'
+                          '"Yeah yeah, you just said the same thing!"\n'
+                          'After you get suspicious of the man, you: ')
+
+            while True:
+                skinari2 = input("(1) Say you can't let him in\n"
+                                 "(2) Say he can enter\n"
+                                 "(Choose 1 or 2): ")
+
+                if skinari2 == "1":
+                    hidastulostus("Pale man comes veeery close to the peephole. You start to get shivers because it seems like the man sees through the peephole.\n"
+                                  "You hold your breath for a while... after 20 seconds the man walks away. You sigh for relief and go back to sleep")
+                    return
+
+                elif skinari2 == "2":
+                    hidastulostus("Pale man thanks you.\n"
+                                  "Everything seems fine, but just after the man enters he attacks you and you didn't have time to react...")
+                    return
+
+                else:
+                    print("Please enter 1-2")
+
+        elif skinari == "3":
+            hidastulostus("Pale man comes veeery close to the peephole. You start to get shivers because it seems like the man sees through the peephole.\n"
+                          "You hold your breath for a while... after 20 seconds the man walks away. You sigh for relief and go back to sleep.")
+            return
+
+        else:
+            print("Please enter 1-3")
+
+
+
 
 def naapuri():
     hidastulostus("Your neighbour Greg is knocking on your hangar door. ")
 
     while True:
-        naapur = input("Will you open the door? (yes/no): ")
-        if naapur.upper() == "YES":
+        naapuri = input("Will you open the door? (yes/no): ")
+        if naapuri.upper() == "YES":
             hidastulostus("Greg: Oh hello there!\n"
                  "I was just thinking, why it's smelling so weird in here?\n"
                  "Could you stop whatever produces these smells?")
@@ -35,7 +83,7 @@ def naapuri():
             elif vastaus1.upper() == "NO":
                 hidastulostus("Greg: Oh... this won't be the last time your hearing from me... ")
                 break
-        elif naapur.upper() == "NO":
+        elif naapuri.upper() == "NO":
             hidastulostus('"Greg" is punching door 3 more times. After that he leaves.')
             break
         else:
@@ -88,7 +136,7 @@ def jehovat():
     elif valinta == "2":
         hidastulostus("Et avaa ovea ja koputus loppuu hetken kuluttua.")
 
-tapahtumat = [jehovat, naapuri, karhuryhma]
+tapahtumat = [jehovat, naapuri, skinwalker]
 
 
 
