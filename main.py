@@ -8,6 +8,32 @@ from Eventit import HomeBase
 from Eventit.random_eventit import airport_eventit
 from Eventit.random_eventit import duringflight_eventit
 
+def calculatePlantGrowth(timeInHours):
+    multiplier = math.pow(1.1, timeInHours / 24)
+    sql = """
+          SELECT SUM(hb.plants)
+          FROM home_base hb
+                   JOIN game_home_base ghb ON hb.ident = ghb.base_ident
+          WHERE ghb.game_id = %s \
+          """
+    GameSetup.cursor.execute(sql, (GameSetup.id_game,))
+    total_plants = GameSetup.cursor.fetchone()[0] or 0
+    new_plants = math.floor(total_plants * multiplier)
+
+    sql = """
+                 UPDATE home_base hb
+                     JOIN game_home_base ghb \
+                 ON hb.ident = ghb.base_ident
+                     SET hb.plants = FLOOR(hb.plants * %s)
+                 WHERE ghb.game_id = %s \
+                 """
+
+    GameSetup.cursor.execute(update_sql, (multiplier, id_game))
+
+    sql = "UPDATE game SET co2_budget = co2_budget + %s where screen_name = %s"
+    GameSetup.cursor.execute(sql, (new_plants-total_plants, GameSetup.id_game))
+
+
 
 def calculateDistance(location, destination):
     distance = geodesic((location[2], location[3]), (destination[2], destination[3])).kilometers

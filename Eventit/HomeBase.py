@@ -1,7 +1,10 @@
 import random
 import time
 from Eventit.random_eventit import Homebase_eventit
+from Eventit import LORE
 def homeBase(GameSetup, selectedBase):
+    if selectedBase[0] == "Island of the big E":
+        LORE.lore_ending(GameSetup.name)
     Homebase_eventit.randomevent_h()
     while True:
         vastaus = int(input("1. Exit base 2. Sleep 3. Open PC 4. Check plantations: "))
@@ -96,7 +99,7 @@ def homeBase(GameSetup, selectedBase):
                             for i in range(0, 5):
                                 print(".")
                             time.sleep(1)
-                            print(f"Install succesfull you have now {(allparts[0][2]) * 20} Seats in your plane")
+                            print(f"Install succesfull you have now {(allparts[0][2] + 1) * 20} Seats in your plane")
                         else:
                             print("Insufficient funds")
                 elif vastaus == 2:
@@ -120,6 +123,7 @@ def homeBase(GameSetup, selectedBase):
                             if int(vastaus) in range(0, len(basesNotOwned)):
                                 selectedBase = basesNotOwned[int(vastaus)]
                                 if money >= selectedBase[1]:
+                                    money -= selectedBase[1]
                                     GameSetup.cursor.execute(f"UPDATE game SET money = {money} where game.screen_name = '{GameSetup.name}'")
                                     GameSetup.cursor.execute(f"INSERT INTO game_home_base (game_id, base_ident) VALUES ({id_game},'{selectedBase[3]}')")
 
