@@ -22,18 +22,20 @@ def homeBase(GameSetup, selectedBase):
             GameSetup.cursor.execute(plantschecksql, (selectedBase[0],))
             plants = GameSetup.cursor.fetchone()
             print(f"You have {plants[0]} plants in this base")
-            sellplants = input("1. Sell all plants 2. buy more plants 3 Exit platation menu: ")
-            if sellplants == "":
+            sellplantsm = input("1. Sell all plants 2. buy more plants 3 Exit platation menu: ")
+            if sellplantsm == "1":
                 sellprice = plants[0] * 15
                 GameSetup.cursor.execute(f"UPDATE game SET money = money + {sellprice} WHERE screen_name = '{GameSetup.name}'")
-                GameSetup.cursor.execute(f"UPDATE home_base SET plants = 10 WHERE name = '{selectedBase[0]}'")
+                GameSetup.cursor.execute(f"UPDATE home_base SET plants = 0 WHERE name = '{selectedBase[0]}'")
                 print(f"You sold {plants[0]} plants from this base for {sellprice} euros")
-            elif sellplants == "2":
-                buyplants = int(input("How many plants do you want to buy? "))
+            elif sellplantsm == "2":
+                buyplants = int(input("How many plants do you want to buy? 15€ per plant: "))
                 buyprice = buyplants * 15
+                GameSetup.cursor.execute(f"SELECT money FROM game WHERE screen_name = '{GameSetup.name}'")             
+                money = GameSetup.cursor.fetchone()
+                money = money[0]
                 if money >= buyprice:
-                    money -= buyprice
-                    GameSetup.cursor.execute(f"UPDATE game SET money = {money} WHERE screen_name = '{GameSetup.name}'")
+                    GameSetup.cursor.execute(f"UPDATE game SET money = money - {buyprice} WHERE screen_name = '{GameSetup.name}'")
                     GameSetup.cursor.execute(f"UPDATE home_base SET plants = plants + {buyplants} WHERE name = '{selectedBase[0]}'")
                     print(f"You bought {buyplants} plants for {buyprice} euros")
                 else:
