@@ -34,6 +34,8 @@ def calculatePlantGrowth(timeInHours):
     sql = "UPDATE game SET co2_budget = co2_budget + %s where screen_name = %s"
     GameSetup.cursor.execute(sql, (new_plants-total_plants, GameSetup.id_game))
 
+    print(f"{new_plants-total_plants} co2 gained from spices growing in your bases")
+
 
 
 def calculateDistance(location, destination):

@@ -24,6 +24,11 @@ def tulli():
         else:
             print("Please enter yes or no")
 
+def co2limit_0(GameSetup):
+    hidastulostus("Interpol starts to be suspicious about your business\n"
+                  "They see your co2 emission and your money.")
+    GameSetup.endGame()
+
 def nainen():
     hidastulostus("Your wife said before you left, that you had better to bring me some presents.")
 
@@ -49,7 +54,7 @@ def nainen():
         hidastulostus("Your just a man you dont know anything about perfumes.")
         hidastulostus("Your wife hates the perfume but appreciated the thought.")
 
-tapahtumat = [nainen, tulli,]
+tapahtumat = [nainen, tulli]
 
 def randomrandomiser():
     tapahtuma = random.choice(tapahtumat)
@@ -62,6 +67,7 @@ def randomevent_a(GameSetup):
     budget = budget[0][0] - budget[0][1]
     if budget < 0:
         if luku <= 5:
+            co2limit_0(GameSetup)
             #Tähän se otettiin kiinni jne
     elif luku == 1:
         randomrandomiser()
