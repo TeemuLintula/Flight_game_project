@@ -1,5 +1,6 @@
 import random
 import time
+import math
 from geopy.distance import geodesic
 
 from Eventit import GameSetup
@@ -28,7 +29,7 @@ def calculatePlantGrowth(timeInHours):
                  WHERE ghb.game_id = %s \
                  """
 
-    GameSetup.cursor.execute(update_sql, (multiplier, id_game))
+    GameSetup.cursor.execute(sql, (multiplier, id_game))
 
     sql = "UPDATE game SET co2_budget = co2_budget + %s where screen_name = %s"
     GameSetup.cursor.execute(sql, (new_plants-total_plants, GameSetup.id_game))
