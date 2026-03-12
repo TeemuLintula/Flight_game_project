@@ -24,7 +24,7 @@ def homeBase(GameSetup, selectedBase):
             print(f"You have {plants[0]} plants in this base")
             sellplants = input("Press enter to sell all plants: ")
             if sellplants == "":
-                sellprice = plants[0] * 50
+                sellprice = plants[0] * 15
                 GameSetup.cursor.execute(f"UPDATE game SET money = money + {sellprice} WHERE screen_name = '{GameSetup.name}'")
                 GameSetup.cursor.execute(f"UPDATE home_base SET plants = 10 WHERE name = '{selectedBase[0]}'")
                 print(f"You sold {plants[0]} plants from this base for {sellprice} euros")
