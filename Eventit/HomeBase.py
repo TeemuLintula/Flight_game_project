@@ -15,7 +15,7 @@ def homeBase(GameSetup, selectedBase):
             for i in range(0, 5):
                 print(".")
                 time.sleep(1)
-            Homebase_eventit.randomevent_h()
+            Homebase_eventit.skinwalker()
             print("You feel refreshed and ready to fly!")
         elif vastaus == 4:
             plantschecksql = "SELECT plants FROM home_base WHERE name = %s"
