@@ -42,7 +42,7 @@ def stuertti():
 
 
 
-def terrorist():
+def terrorist(GameSetup):
     hidastulostus("Bad men are trying to kidnap the plane!")
 
     while True:
@@ -60,7 +60,7 @@ def terrorist():
 
                 if luku2 == 1:
                     hidastulostus("The bad men flew the plane into a building. You died.")
-                    # tähän pelin lopetus funktio!
+                    GameSetup.endGame()
                 else:
                     hidastulostus("The bad men kidnapped you and you rotted in a cell for 1 year.")
                 break
@@ -75,7 +75,7 @@ def terrorist():
 
             if luku2 == 1:
                 hidastulostus("The bad men flew the plane into a building. You died.")
-                # tähän pelin lopetus funktio!
+                GameSetup.endGame()
             else:
                 hidastulostus("The bad men kidnapped you and you rotted in a cell for 1 year.")
             break
@@ -86,7 +86,7 @@ def terrorist():
 
 
 # Call the
-def aliens_invade():
+def aliens_invade(GameSetup):
     hidastulostus("Aliens space ship starts to pull your plane towards it.")
     hidastulostus("The plane starts to shake and passengers are screaming!")
     hidastulostus("Plane and the ufo are flying side by side.  ")
@@ -118,6 +118,7 @@ def aliens_invade():
         if vastaus3 == "1":
             hidastulostus("The aliens come in to the plane and the police takes his shot")
             hidastulostus("He misses and the aliens take over")
+            GameSetup.endGame()
             return
 
         elif vastaus3 == "2":
@@ -133,15 +134,16 @@ def aliens_invade():
 
     elif vastaus3 == "3":
         hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. you died.")
+        GameSetup.endGame()
         return
-def alien():
+def alien(GameSetup):
     noppa = random.randint(1,3)
     while True:
         if noppa == 1 :
             hidastulostus("An unidentified flying object flies past you. No one else saw it and your confused.")
             break
         elif noppa == 3:
-            aliens_invade()
+            aliens_invade(GameSetup)
             break
 
         elif noppa == 2:
@@ -161,7 +163,7 @@ def alien():
                         print("Please choose 1 or 2")
 
                 if vastaus == "1":
-                    aliens_invade()
+                    aliens_invade(GameSetup)
                     break
 
                 elif vastaus == "2":
@@ -178,6 +180,7 @@ def alien():
 
                     if vastaus2 == "1":
                         hidastulostus("the aliens got tired of your bullcrap and exterminated you")
+                        GameSetup.endGame()
                         break
                         #pelin lopetus funktio
 
@@ -188,11 +191,11 @@ def alien():
 
 tapahtumat = [stuertti, terrorist, alien]
 
-def randomrandomiser():
+def randomrandomiser(GameSetup):
     tapahtuma = random.choice(tapahtumat)
-    tapahtuma()
+    tapahtuma(GameSetup)
 
-def randomevent_d():
+def randomevent_d(GameSetup):
     luku = random.randint(1,100)
     if luku == 1:
-        randomrandomiser()
+        randomrandomiser(GameSetup)

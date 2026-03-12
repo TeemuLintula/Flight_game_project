@@ -10,17 +10,20 @@ from Eventit.random_eventit import airport_eventit
 from Eventit.random_eventit import duringflight_eventit
 
 def calculatePlantGrowth(timeInHours):
-    multiplier = math.pow(1.1, timeInHours / 24)
+    id_game = "SELECT id FROM game WHERE screen_name = %s"
+    GameSetup.cursor.execute(id_game, (GameSetup.name,))
+    id_game = GameSetup.cursor.fetchone()[0]
+    multiplier = math.pow(1.5, timeInHours / 12)
     sql = """
           SELECT SUM(hb.plants)
           FROM home_base hb
                    JOIN game_home_base ghb ON hb.ident = ghb.base_ident
-          WHERE ghb.game_id = %s \
+          WHERE ghb.game_id = %s
           """
-    GameSetup.cursor.execute(sql, (GameSetup.id_game,))
-    total_plants = GameSetup.cursor.fetchone()[0] or 0
+    GameSetup.cursor.execute(sql, (id_game,))
+    total_plants = GameSetup.cursor.fetchone()
+    total_plants = float(total_plants[0])
     new_plants = math.floor(total_plants * multiplier)
-
     sql = """
                  UPDATE home_base hb
                      JOIN game_home_base ghb \
@@ -32,9 +35,9 @@ def calculatePlantGrowth(timeInHours):
     GameSetup.cursor.execute(sql, (multiplier, id_game))
 
     sql = "UPDATE game SET co2_budget = co2_budget + %s where screen_name = %s"
-    GameSetup.cursor.execute(sql, (new_plants-total_plants, GameSetup.id_game))
+    GameSetup.cursor.execute(sql, (int(new_plants-total_plants), GameSetup.name))
 
-    print(f"{new_plants-total_plants} co2 gained from spices growing in your bases")
+    print(f"{int(new_plants-total_plants)} co2 regained from spices growing in your bases")
 
 
 
@@ -49,6 +52,7 @@ def calculateDistance(location, destination):
     print(f"Distance flought {int(distance)}km and co2 consumed {co}")
     cosql = f"UPDATE game SET co2_consumed = co2_consumed + {co} WHERE screen_name = %s"
     GameSetup.cursor.execute(cosql, (GameSetup.name,))
+    calculatePlantGrowth(distance / 800)
     return co
 
 def newMission():
@@ -76,7 +80,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        duringflight_eventit.randomevent_d()
+        duringflight_eventit.randomevent_d(GameSetup)
 
     print(f"You arrived to {Current_mission['Location'][0][0]}")
     co = 0
@@ -120,7 +124,7 @@ def missionFLight():
     for i in range(0, 5):
         print(".")
         time.sleep(1)
-        duringflight_eventit.randomevent_d()
+        duringflight_eventit.randomevent_d(GameSetup)
 
 
     print(f"You arrived to final destination {Current_mission['Destination'][0][0]}")
