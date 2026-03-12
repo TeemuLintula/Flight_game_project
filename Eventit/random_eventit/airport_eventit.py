@@ -26,7 +26,8 @@ def tulli():
 
 def co2limit_0(GameSetup):
     hidastulostus("Interpol starts to be suspicious about your business\n"
-                  "They see your co2 emission and your money.")
+                  "They see your co2 emission and your money. \n"
+                  "You are cooked........")
     GameSetup.endGame()
 
 def nainen():
