@@ -62,7 +62,7 @@ def randomrandomiser():
     tapahtuma()
 
 def randomevent_a(GameSetup):
-    luku = random.randint(1,50)
+    luku = random.randint(1,25)
     GameSetup.cursor.execute(f"select game.co2_budget, game.co2_consumed from game where game.screen_name = '{GameSetup.name}'")
     budget = GameSetup.cursor.fetchall()
     budget = budget[0][0] - budget[0][1]

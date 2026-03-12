@@ -9,7 +9,7 @@ def hidastulostus(teksti, nopeus=0.03):
         sys.stdout.flush()
         time.sleep(nopeus)
 
-def stuertti():
+def stuertti(GameSetup):
     hidastulostus("Flight attendant asks you what food you want!")
     hidastulostus("Choose what you eat:")
     hidastulostus("1 - Pizza")
@@ -196,6 +196,6 @@ def randomrandomiser(GameSetup):
     tapahtuma(GameSetup)
 
 def randomevent_d(GameSetup):
-    luku = random.randint(1,100)
+    luku = random.randint(1,50)
     if luku == 1:
         randomrandomiser(GameSetup)

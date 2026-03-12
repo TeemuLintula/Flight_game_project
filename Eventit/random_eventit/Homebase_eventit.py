@@ -145,6 +145,6 @@ def randomrandomiser():
     tapahtuma()
 
 def randomevent_h():
-    luku = random.randint(1,10)
+    luku = random.randint(1,4)
     if luku == 1:
         randomrandomiser()
