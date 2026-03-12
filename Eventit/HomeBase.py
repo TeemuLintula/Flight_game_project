@@ -22,12 +22,24 @@ def homeBase(GameSetup, selectedBase):
             GameSetup.cursor.execute(plantschecksql, (selectedBase[0],))
             plants = GameSetup.cursor.fetchone()
             print(f"You have {plants[0]} plants in this base")
-            sellplants = input("Press enter to sell all plants: ")
+            sellplants = input("1. Sell all plants 2. buy more plants 3 Exit platation menu: ")
             if sellplants == "":
                 sellprice = plants[0] * 15
                 GameSetup.cursor.execute(f"UPDATE game SET money = money + {sellprice} WHERE screen_name = '{GameSetup.name}'")
                 GameSetup.cursor.execute(f"UPDATE home_base SET plants = 10 WHERE name = '{selectedBase[0]}'")
                 print(f"You sold {plants[0]} plants from this base for {sellprice} euros")
+            elif sellplants == "2":
+                buyplants = int(input("How many plants do you want to buy? "))
+                buyprice = buyplants * 15
+                if money >= buyprice:
+                    money -= buyprice
+                    GameSetup.cursor.execute(f"UPDATE game SET money = {money} WHERE screen_name = '{GameSetup.name}'")
+                    GameSetup.cursor.execute(f"UPDATE home_base SET plants = plants + {buyplants} WHERE name = '{selectedBase[0]}'")
+                    print(f"You bought {buyplants} plants for {buyprice} euros")
+                else:
+                    print("You don't have enough money.")
+            else:
+                print("Exiting plantation menu")
         elif vastaus == 3:
             while True:
                 GameSetup.cursor.execute(f"select game.money from game where game.screen_name = '{GameSetup.name}'")
