@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Game Mission Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="sky-glow sky-glow-a"></div>
+  <div class="sky-glow sky-glow-b"></div>
+
+  <section id="authOverlay" class="auth-overlay">
+    <div class="auth-card glass">
+      <p class="eyebrow">Connect Database</p>
+      <h2 class="auth-title">MariaDB Login</h2>
+      <p class="auth-subtitle">Enter your MariaDB credentials to load game saves.</p>
+      <form id="dbLoginForm" class="auth-form">
+        <label>Host <input id="dbHost" type="text" value="localhost" required /></label>
+        <label>Port <input id="dbPort" type="number" value="3306" required /></label>
+        <label>User <input id="dbUser" type="text" required /></label>
+        <label>Password <input id="dbPassword" type="password" required /></label>
+        <label>Database <input id="dbName" type="text" value="flight_game" required /></label>
+        <button id="dbLoginBtn" class="start-btn" type="submit">Connect</button>
+      </form>
+      <p id="dbAuthStatus" class="auth-status"></p>
+    </div>
+  </section>
+
+  <section id="saveOverlay" class="auth-overlay hidden">
+    <div class="auth-card glass">
+      <p class="eyebrow">Select Save</p>
+      <h2 class="auth-title">Choose Pilot Save</h2>
+      <p class="auth-subtitle">Pick the save you want to continue.</p>
+      <div class="save-create-row">
+        <input id="newSaveName" type="text" placeholder="New pilot name" maxlength="30" />
+        <button id="createSaveBtn" class="start-btn" type="button">Create Save</button>
+      </div>
+      <div id="saveList" class="save-list"></div>
+      <div class="save-actions">
+        <button id="refreshSavesBtn" class="status-btn" type="button">Refresh Saves</button>
+        <button id="deleteSaveBtn" class="status-btn" type="button" disabled>Delete Selected</button>
+        <button id="continueBtn" class="start-btn" type="button" disabled>Continue</button>
+      </div>
+      <p id="saveStatus" class="auth-status"></p>
+    </div>
+  </section>
+
+  <main id="gameApp" class="app-shell app-hidden">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Flight Game Dashboard</p>
+        <h1>Mission Command</h1>
+      </div>
+      <div class="status-strip">
+        <span class="status-chip">Pilot: <strong id="playerName">-</strong></span>
+        <span class="status-chip">CO2 Budget: <strong id="co2Budget">5200</strong></span>
+        <span class="status-chip">Credits: <strong id="credits">8600</strong></span>
+        <button id="backToSavesBtn" class="status-btn" type="button">Back To Saves</button>
+        <button id="refreshMissionsBtn" class="status-btn" type="button">Refresh Missions</button>
+      </div>
+    </header>
+
+    <section class="layout-grid">
+      <article class="map-panel glass">
+        <div class="panel-head">
+          <h2>Flight Map</h2>
+          <p id="routeLabel">Select a mission to draw route</p>
+        </div>
+        <div class="flight-controls">
+          <button id="startMissionBtn" class="start-btn" type="button">Start Mission</button>
+          <p id="flightStatus" class="flight-status">Ready for departure</p>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="flightProgress" class="progress-fill"></div>
+        </div>
+        <div id="map"></div>
+      </article>
+
+      <aside class="mission-panel glass">
+        <div class="panel-head">
+          <h2 id="missionPanelTitle">Available Missions</h2>
+          <p id="missionPanelSubtitle">Tap a mission to preview route and payout.</p>
+        </div>
+        <div id="missionList" class="mission-list"></div>
+        <div id="captionList" class="caption-list hidden"></div>
+      </aside>
+    </section>
+  </main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>
