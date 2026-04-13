@@ -474,8 +474,8 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
 
 
 def run_server():
-    host = os.getenv("FG_HOST", "127.0.0.1")
-    port = int(os.getenv("FG_PORT", "8080"))
+    host = os.getenv("FG_HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", os.getenv("FG_PORT", "8080")))
     print(f"Serving Flight Game UI + API at http://{host}:{port}")
     print("Set FG_DB_USER and FG_DB_PASSWORD environment variables before launch.")
     HTTPServer((host, port), GameRequestHandler).serve_forever()
