@@ -8,7 +8,7 @@ app = Flask(__name__, template_folder='web_ui')
 def flight_game_run():
     return render_template("index.html")
 
-#Route Javascriptille kun loginiä painetaan Gamesetup luo yhteyden
+#Route Javascriptille kun log in:iä painetaan Gamesetup luo yhteyden
 @app.route("/api/db-login", methods=["POST"])
 def db_login():
     data = request.get_json()
