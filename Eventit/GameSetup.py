@@ -6,6 +6,7 @@ print("Tervetuloa lentopeliin")
 #Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan
 def db_connection(user, password):
      try:
+          global yhteys
           yhteys = mysql.connector.connect(
           host="localhost",
           port = 3306,
