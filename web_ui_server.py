@@ -19,7 +19,8 @@ def db_login():
     session_id = user
     connections[session_id] = conn
     return jsonify({"session": session_id})
-#Route Javascriptille joka lataa GameSetup.py scriptistä kaikki savet
+
+#Kerää kaikki savefilet sql:stä
 @app.route("/api/saves", methods=["GET"])
 def saves():
     session_id = request.headers.get("X-DB-Session")
@@ -49,6 +50,39 @@ def saves():
         })
 
     return jsonify({"saves": saves})
+
+#valitsee saven ja aloittaa pelin
+@app.route("/api/game-state", methods=["GET"])
+def game_state():
+    session_id = request.headers.get("X-DB-Session")
+    conn = connections.get(session_id)
+
+    if not conn:
+        return jsonify({"error": "No session"}), 401
+
+    player = request.args.get("player")
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT money, co2_budget, co2_consumed, location, screen_name
+        FROM game
+        WHERE screen_name = %s
+    """, (player,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return jsonify({"error": "Player not found"}), 404
+
+    money, budget, consumed, location, screen_name = row
+
+    return jsonify({
+        "money": money,
+        "co2_remaining": budget - consumed,
+        "location": location,
+        "player": screen_name
+    })
 
 @app.route('/app.js')
 def js():
