@@ -4,57 +4,58 @@ from Eventit import LORE
 from mysql.connector import Error
 print("Tervetuloa lentopeliin")
 #Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan  
-while True:
+def db_connection(user, password):
      try:
           yhteys = mysql.connector.connect(
           host="localhost",
           port = 3306,
-          user= input("Enter MariaDB username: "),
-          password= input("Enter MariaDB password: "),
+          user= user,
+          password= password,
           database="flight_game",
           autocommit=True
           )
           if yhteys.is_connected():
                print("Yhteys onnistui!")
-               break
-          else: 
+               return yhteys
+          else:
                print("Yhteys epäonnistui, yritä uudestaan.\n")
      except Error as e:
           print("Error while connecting to MariaDB check username and password: ", e)
 
-print(f"Kirjaudutaan tietokantaan käyttäjällä {yhteys.user}...")
-global name
-name = input("Kerro nimesi: ")
-cursor = yhteys.cursor()
+def selectPlayer():
+    print(f"Kirjaudutaan tietokantaan käyttäjällä {yhteys.user}...")
+    global name
+    name = input("Kerro nimesi: ")
+    cursor = yhteys.cursor()
 
-# Tarkistaa onko pelaaja tietokannassa, jos ei ole luodaan uusi pelaaja
-cursor = yhteys.cursor()
-id_game = "SELECT id FROM game WHERE screen_name = %s"
-cursor.execute(id_game, (name,))
-
-result = cursor.fetchone()
-
-if not result:
-    sql = "INSERT INTO game (screen_name) VALUES (%s)"
-    locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
-    moneysetsql = "UPDATE game SET money = 1000 WHERE screen_name = %s"
-    basesetsql = "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s,'EFHK')"
-    addplanesql = "INSERT INTO airplane (game_id) VALUES(%s)"
-    planesql = "UPDATE airplane SET ruuma = 1, moottori = 1, istuinpaikat = 1 WHERE game_id = %s"
-    cursor.execute(sql, (name,))
-    cursor.execute(locaddsql, (name,))
-    cursor.execute(moneysetsql, (name,))
-    yhteys.commit()
+    # Tarkistaa onko pelaaja tietokannassa, jos ei ole luodaan uusi pelaaja
+    cursor = yhteys.cursor()
+    id_game = "SELECT id FROM game WHERE screen_name = %s"
     cursor.execute(id_game, (name,))
+
     result = cursor.fetchone()
-    cursor.execute(basesetsql, (result[0],))
-    cursor.execute(addplanesql, (result[0],))
-    cursor.execute(planesql, (result[0],))
-    print(f"Uusi pelaaja {name} luotu tietokantaan")
-    print("-------------------------------------------------------------------------------------")
-    LORE.lore(name)
-else:
-    print(f"Tervetuloa takaisin {name}!")
+
+    if not result:
+        sql = "INSERT INTO game (screen_name) VALUES (%s)"
+        locaddsql = "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0 WHERE screen_name = %s"
+        moneysetsql = "UPDATE game SET money = 1000 WHERE screen_name = %s"
+        basesetsql = "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s,'EFHK')"
+        addplanesql = "INSERT INTO airplane (game_id) VALUES(%s)"
+        planesql = "UPDATE airplane SET ruuma = 1, moottori = 1, istuinpaikat = 1 WHERE game_id = %s"
+        cursor.execute(sql, (name,))
+        cursor.execute(locaddsql, (name,))
+        cursor.execute(moneysetsql, (name,))
+        yhteys.commit()
+        cursor.execute(id_game, (name,))
+        result = cursor.fetchone()
+        cursor.execute(basesetsql, (result[0],))
+        cursor.execute(addplanesql, (result[0],))
+        cursor.execute(planesql, (result[0],))
+        print(f"Uusi pelaaja {name} luotu tietokantaan")
+        print("-------------------------------------------------------------------------------------")
+        LORE.lore(name)
+    else:
+        print(f"Tervetuloa takaisin {name}!")
 
 def endGame():
      playerdropsql = "UPDATE game SET screen_name = NULL WHERE screen_name = %s"
