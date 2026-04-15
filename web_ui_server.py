@@ -14,9 +14,30 @@ def db_login():
     password = data["password"]
 
     conn = GameSetup.db_connection(user, password)
-    cur = conn.cursor()
-
     return jsonify({"session": "ok"})
+#Route Javascriptille joka lataa GameSetup.py scriptistä kaikki savet
+@app.route("/api/saves", methods=["POST"])
+def saves():
+    GameSetup.yhtes.execute(
+        """
+        SELECT screen_name, money, co2_budget, co2_consumed
+        FROM game
+        WHERE screen_name IS NOT NULL
+          AND screen_name != ''
+        ORDER BY screen_name
+        """
+    )
+    saves = []
+    for screen_name, money, co2_budget, co2_consumed in GameSetup.cursor.fetchall():
+        saves.append(
+            {
+                "pilot": screen_name,
+                "money": int(money),
+                "co2_remaining": int(co2_budget - co2_consumed),
+            }
+        )
+    return saves
+
 
 @app.route('/app.js')
 def js():

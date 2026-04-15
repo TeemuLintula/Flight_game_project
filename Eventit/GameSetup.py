@@ -3,7 +3,7 @@ import sys
 from Eventit import LORE
 from mysql.connector import Error
 print("Tervetuloa lentopeliin")
-#Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan  
+#Kysyy käyttäjä tiedot ja muodostaa yhteyden tietokantaan
 def db_connection(user, password):
      try:
           yhteys = mysql.connector.connect(
