@@ -369,38 +369,50 @@ async function loadGameState() {
 // Builds and displays the clickable mission cards.
 // ============================================================
 
-// Creates a single mission card DOM element
 function createMissionCard(mission, index) {
+  console.log("mission card luotu");
+
+  const isRisky = !mission.legal;
+
   const card = document.createElement("article");
-  card.className = `mission-card ${mission.legal ? "" : "risky"}`;
+  card.className = `mission-card ${isRisky ? "risky" : ""}`;
   card.style.animationDelay = `${index * 80}ms`;
 
-  const cargoUnit = mission.cargo.includes("humans") ? "passengers" : "units";
+  const cargoUnit =
+    typeof mission.cargo === "string" && mission.cargo.includes("Humans")
+      ? "passengers"
+      : "units";
+
   card.innerHTML = `
     <h3 class="mission-title">${mission.name}</h3>
-    <p class="mission-meta">${mission.from.country} -> ${mission.to.country}</p>
+    <p class="mission-meta">${mission.location[0][1]} -> ${mission.destination[0][1]}</p>
     <p class="mission-meta">Cargo: ${mission.cargoAmount} ${cargoUnit} (${mission.cargo})</p>
     <div class="meta-row">
-      <span class="tag ${mission.legal ? "" : "risky"}">${mission.legal ? "NO RISK" : "RISKY"}</span>
+      <span class="tag ${isRisky ? "risky" : ""}">${isRisky ? "RISKY" : "NO RISK"}</span>
       <span class="pay">${formatMoney(missionTotal(mission))}</span>
     </div>
   `;
 
   card.addEventListener("click", () => {
     stopFlightAnimation();
-    document.querySelectorAll(".mission-card").forEach((el) => el.classList.remove("active"));
+
+    document.querySelectorAll(".mission-card").forEach((el) =>
+      el.classList.remove("active")
+    );
+
     card.classList.add("active");
     drawMission(mission);
   });
 
   return card;
 }
-
 // Renders the full mission list and auto-selects the first one
 function renderMissionList() {
+  console.log("renderaus alotettu");
   showMissionSelection();
   missionListEl.innerHTML = "";
   missions.forEach((mission, idx) => {
+    console.log(mission);
     missionListEl.appendChild(createMissionCard(mission, idx));
   });
 
@@ -430,6 +442,7 @@ async function loadMissions() {
     renderMissionList();
     startMissionBtn.disabled = false;
   } catch (error) {
+    console.log(error.message);
     missionListEl.innerHTML = "<p class='mission-meta'>Could not load missions. Try refresh.</p>";
     routeLabelEl.textContent = "Mission load failed";
     flightStatusEl.textContent = "Mission service unavailable";

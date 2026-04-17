@@ -16,7 +16,7 @@ mission = {
 def GenerateMission(cursor):
     Legal = random.choice([True, False])
     if Legal:
-        Legal_Cargo = ["Humans", "Illegal Humans"]
+        Legal_Cargo = ["Humans", "Cargo"]
         Cargo = random.choice(Legal_Cargo)
         cursor.execute(
             "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg, airport.ident FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' ORDER BY RAND() LIMIT 1;")
@@ -33,7 +33,7 @@ def GenerateMission(cursor):
             Pay = random.randint(5, 100)
             Name = f"{Location[0][1]} Cargo flight"
     else:
-        Illegal_Cargo = ["Illegal Humans", "TAX_FREE_SPICES"]
+        Illegal_Cargo = ["Illegal Humans", "TAX FREE SPICES"]
         Cargo = random.choice(Illegal_Cargo)
         cursor.execute(
             "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg, airport.ident FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'AF' or airport.continent = 'SA' or airport.iso_country = 'SY' or airport.iso_country = 'AF') ORDER BY RAND() LIMIT 1;")

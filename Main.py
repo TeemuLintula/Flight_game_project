@@ -95,7 +95,8 @@ def callMissions():
     missions = []
 
     for i in range(random.randint(5, 10)):
-        missions.append(Mission.GenerateMission(cursor))
+        newmission = Mission.GenerateMission(cursor)
+        missions.append(newmission)
         print(missions[i]["Name"], i)
 
     print(jsonify({"missions": missions}))
