@@ -416,9 +416,9 @@ async function loadMissions() {
   startMissionBtn.disabled = true;
   routeLabelEl.textContent = "Loading missions from backend...";
   try {
-    const data = await fetchJson(`/api/missions?player=${encodeURIComponent(playerName)}&count=5`);
+    const data = await fetchJson(`/api/callMissions?player=${encodeURIComponent(playerName)}&count=5`);
     missions = Array.isArray(data.missions) ? data.missions : [];
-
+    console.log(missions);
     if (missions.length === 0) {
       missionListEl.innerHTML = "<p class='mission-meta'>No missions available right now.</p>";
       routeLabelEl.textContent = "No route available";

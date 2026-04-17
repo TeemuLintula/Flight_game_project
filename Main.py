@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_from_directory, request, jsonify
-from Eventit import GameSetup
+from Eventit import GameSetup, Mission
+import random
 
 #tallentaa luodut yhteydet palvelimeen
 connections = {}
@@ -83,6 +84,23 @@ def game_state():
         "location": location,
         "player": screen_name
     })
+@app.route("/api/callMissions", methods=["GET"])
+def callMissions():
+    session_id = request.headers.get("X-DB-Session")
+    conn = connections.get(session_id)
+    if not conn:
+        print("no connection")
+        return jsonify({"error": "Session expired"}), 401
+    cursor = conn.cursor()
+    missions = []
+
+    for i in range(random.randint(5, 10)):
+        missions.append(Mission.GenerateMission(cursor))
+        print(missions[i]["Name"], i)
+
+    print(jsonify({"missions": missions}))
+    return jsonify({"missions": missions})
+
 
 @app.route('/app.js')
 def js():
