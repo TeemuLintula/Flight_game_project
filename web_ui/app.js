@@ -136,7 +136,7 @@ function appendCaption(text) {
 // Switches panel to the "Captain Log" live feed view
 function showCaptainLog(mission) {
   missionPanelTitleEl.textContent = "Captain Log";
-  missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.name}`;
+  missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.Name}`;
   missionListEl.classList.add("hidden");
   captionListEl.classList.remove("hidden");
   captionListEl.innerHTML = "";
@@ -240,7 +240,7 @@ function drawMission(mission) {
 
   const bounds = L.featureGroup([preRoute, activeRoute]).getBounds();
   map.fitBounds(bounds, { padding: [40, 40] });
-  routeLabelEl.textContent = `${mission.name}: Your Location -> ${mission.Location[0][0]} -> ${mission.Destination[0][0]}`;
+  routeLabelEl.textContent = `${mission.Name}: Your Location -> ${mission.Location[0][0]} -> ${mission.Destination[0][0]}`;
   flightStatusEl.textContent = "Ready for departure";
   flightProgressEl.style.width = "0%";
 }
@@ -398,7 +398,7 @@ function createMissionCard(mission, index) {
       : "units";
 
   card.innerHTML = `
-    <h3 class="mission-title">${mission.name}</h3>
+    <h3 class="mission-title">${mission.Name}</h3>
     <p class="mission-meta">${mission.Location[0][1]} -> ${mission.Destination[0][1]}</p>
     <p class="mission-meta">Cargo: ${mission.cargoAmount} ${cargoUnit} (${mission.cargo})</p>
     <div class="meta-row">
@@ -552,7 +552,7 @@ function startSelectedMission() {
 
   stopFlightAnimation();
   showCaptainLog(selectedMission);
-  appendCaption(`Mission accepted: ${selectedMission.name}`);
+  appendCaption(`Mission accepted: ${selectedMission.Name}`);
   appendCaption(`Routing to pickup airport ${selectedMission.Location[0][0]}.`);
 
   isFlying = true;
