@@ -3,7 +3,7 @@ import time
 from Eventit.random_eventit import Homebase_eventit
 from Eventit import LORE
 def homeBase(GameSetup, selectedBase):
-    if selectedBase[0] == "Island of the big E":
+    if selectedBase[0] == "Island of the big Z":
         LORE.lore_ending(GameSetup.name)
     Homebase_eventit.randomevent_h()
     while True:
@@ -73,7 +73,7 @@ def homeBase(GameSetup, selectedBase):
                     vastaus = int(input("1. Upgrade Cargo 2. Upgrade Engine 3. Upgrade Seats 4. Exit: "))
                     if vastaus == 1:
                         if allparts[0][0] == 5:
-                            print("No new cargo uprgrades avaiable")
+                            print("No new cargo upgrades available")
                             break
                         if money >= storagePrice:
                             money -= storagePrice
@@ -83,12 +83,12 @@ def homeBase(GameSetup, selectedBase):
                             for i in range(0, 5):
                                 print(".")
                             time.sleep(1)
-                            print(f"Install succesfull you have now {(allparts[0][0] + 1) * 20 * 1000}kg storage capacity")
+                            print(f"Install successful you have now {(allparts[0][0] + 1) * 20 * 1000}kg storage capacity")
                         else:
                             print("Insufficient funds")
                     if vastaus == 2:
                         if allparts[0][1] == 5:
-                            print("No new engine uprgrades avaiable")
+                            print("No new engine upgrades available")
                             break
                         if money >= enginePrice:
                             money -= enginePrice
@@ -98,12 +98,12 @@ def homeBase(GameSetup, selectedBase):
                             for i in range(0, 5):
                                 print(".")
                             time.sleep(1)
-                            print(f"Install succesfull you are using now {5 / (allparts[0][1] + 1):.1f} Units of fuel per kilometer")
+                            print(f"Install successful you are using now {5 / (allparts[0][1] + 1):.1f} Units of fuel per kilometer")
                         else:
                             print("Insufficient funds")
                     if vastaus == 3:
                         if allparts[0][2] == 5:
-                            print("No new seat uprgrades avaiable")
+                            print("No new seat upgrades available")
                             break
                         if money >= seatprice:
                             money -= seatprice
@@ -113,7 +113,7 @@ def homeBase(GameSetup, selectedBase):
                             for i in range(0, 5):
                                 print(".")
                             time.sleep(1)
-                            print(f"Install succesfull you have now {(allparts[0][2] + 1) * 20} Seats in your plane")
+                            print(f"Install successful you have now {(allparts[0][2] + 1) * 20} Seats in your plane")
                         else:
                             print("Insufficient funds")
                 elif vastaus == 2:

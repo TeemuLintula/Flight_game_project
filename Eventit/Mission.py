@@ -4,7 +4,7 @@ from Eventit import GameSetup
 # Enum-luokka, joka määrittelee erilaiset rahtityypit
 class CargoType(Enum):
     HUMANS = "humans"
-    ILLEGAL_HUMANS = "illegal humans"
+    ILLEGAL_HUMANS = "Monkeys"
     CARGO = "cargo"
     TAX_FREE_SPICES = "tax free spices"
 

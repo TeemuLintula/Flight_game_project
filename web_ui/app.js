@@ -372,7 +372,7 @@ async function loadGameState() {
 // Creates a single mission card DOM element
 function createMissionCard(mission, index) {
   const card = document.createElement("article");
-  card.className = `mission-card ${mission.legal ? "" : "illegal"}`;
+  card.className = `mission-card ${mission.legal ? "" : "risky"}`;
   card.style.animationDelay = `${index * 80}ms`;
 
   const cargoUnit = mission.cargo.includes("humans") ? "passengers" : "units";
@@ -381,7 +381,7 @@ function createMissionCard(mission, index) {
     <p class="mission-meta">${mission.from.country} -> ${mission.to.country}</p>
     <p class="mission-meta">Cargo: ${mission.cargoAmount} ${cargoUnit} (${mission.cargo})</p>
     <div class="meta-row">
-      <span class="tag ${mission.legal ? "" : "illegal"}">${mission.legal ? "LEGAL" : "ILLEGAL"}</span>
+      <span class="tag ${mission.legal ? "" : "risky"}">${mission.legal ? "NO RISK" : "RISKY"}</span>
       <span class="pay">${formatMoney(missionTotal(mission))}</span>
     </div>
   `;

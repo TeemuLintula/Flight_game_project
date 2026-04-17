@@ -50,7 +50,7 @@ def nainen():
     elif valinta == "2":
         hidastulostus("you bought your wife a moomin candy box. She felt nostalgic.")
     elif valinta == "3":
-        hidastulostus("You wife got tired of your bullcrap. She left you.")
+        hidastulostus("You wife got tired of you. She left you.")
     elif valinta == "4":
         hidastulostus("Your just a man you dont know anything about perfumes.")
         hidastulostus("Your wife hates the perfume but appreciated the thought.")

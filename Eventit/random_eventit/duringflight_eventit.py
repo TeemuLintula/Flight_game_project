@@ -59,7 +59,7 @@ def terrorist(GameSetup):
                 luku2 = random.randint(1, 4)
 
                 if luku2 == 1:
-                    hidastulostus("The bad men flew the plane into a building. You died.")
+                    hidastulostus("The bad men flew the plane into a land. Game over.")
                     GameSetup.endGame()
                 else:
                     hidastulostus("The bad men kidnapped you and you rotted in a cell for 1 year.")
@@ -74,7 +74,7 @@ def terrorist(GameSetup):
             luku2 = random.randint(1, 4)
 
             if luku2 == 1:
-                hidastulostus("The bad men flew the plane into a building. You died.")
+                hidastulostus("The bad men flew the plane into a land. You died.")
                 GameSetup.endGame()
             else:
                 hidastulostus("The bad men kidnapped you and you rotted in a cell for 1 year.")
@@ -104,9 +104,9 @@ def aliens_invade(GameSetup):
             print("Please choose 1-3")
 
     if vastaus3 == "1":
-        hidastulostus("The police suggests that he is going to shoot them, do you: ")
-        hidastulostus("(1) Trust the police with the gun")
-        hidastulostus("(2) Take the gun yourself")
+        hidastulostus("The police suggests that he is going to taser them, do you: ")
+        hidastulostus("(1) Trust the police with the taser")
+        hidastulostus("(2) Take the taser yourself")
 
         while True:
             vastaus3 = input("choose 1-2: ")
@@ -116,13 +116,13 @@ def aliens_invade(GameSetup):
                 print("Please choose 1-2")
 
         if vastaus3 == "1":
-            hidastulostus("The aliens come in to the plane and the police takes his shot")
+            hidastulostus("The aliens come in to the plane and the police tries to taser them.")
             hidastulostus("He misses and the aliens take over")
             GameSetup.endGame()
             return
 
         elif vastaus3 == "2":
-            hidastulostus("Your practises at the gun range finally pay off and your able top prevent the aliens from taking over the plane.")
+            hidastulostus("Your practises at the taser club finally pays off and your able top prevent the aliens from taking over the plane.")
             return
 
 
@@ -133,7 +133,7 @@ def aliens_invade(GameSetup):
         return
 
     elif vastaus3 == "3":
-        hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. you died.")
+        hidastulostus("Your desperate attempt to fight the aliens fails after a long fight. Game over")
         GameSetup.endGame()
         return
 def alien(GameSetup):
@@ -179,13 +179,13 @@ def alien(GameSetup):
                             print("Please choose 1 or 2")
 
                     if vastaus2 == "1":
-                        hidastulostus("the aliens got tired of your bullcrap and exterminated you")
+                        hidastulostus("the aliens got tired of you and exterminated you")
                         GameSetup.endGame()
                         break
                         #pelin lopetus funktio
 
                     elif vastaus2 == "2":
-                        hidastulostus('"we didnt know your that stupid"')
+                        hidastulostus('"We didn´t know your that stupid"')
                         break
 
 

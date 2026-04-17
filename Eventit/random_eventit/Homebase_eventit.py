@@ -102,7 +102,7 @@ def kysy_valinta(kysymys):
 def liittymis_kysymys():
     liittyy = kysy_valinta("(1) En halua liittyä (2) Haluan liittyä: ")
     if liittyy == "1":
-        hidastulostus("pala helvetissä pakana.")
+        hidastulostus("Ei sitten.")
     elif liittyy == "2":
         hidastulostus("Oikea valinta. Tässä vielä Vartiotorni-lehti, josta voit lukea meistä lisää.")
 
