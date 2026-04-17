@@ -59,6 +59,7 @@ def selectPlayer():
         print(f"Tervetuloa takaisin {name}!")
 
 def endGame():
+     cursor = yhteys.cursor()
      playerdropsql = "UPDATE game SET screen_name = NULL WHERE screen_name = %s"
      cursor.execute(playerdropsql, (name,))
      print("..GAME OVER..")

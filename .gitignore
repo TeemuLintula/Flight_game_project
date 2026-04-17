@@ -216,3 +216,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 .venv
+Eventit/__pycache__/GameSetup.cpython-314.pyc

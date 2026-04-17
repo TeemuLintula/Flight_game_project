@@ -1,14 +1,23 @@
+// ============================================================
+// GLOBAL STATE
+// Tracks current game session: loaded missions, active player,
+// database session token, and selected save slot.
+// ============================================================
 let missions = [];
 let playerName = "";
 let dbSessionToken = "";
 let selectedSaveName = "";
 
+// ============================================================
+// DOM REFERENCES – Auth & Save Selection Screens
+// ============================================================
 const authOverlayEl = document.getElementById("authOverlay");
 const saveOverlayEl = document.getElementById("saveOverlay");
 const gameAppEl = document.getElementById("gameApp");
 const dbAuthStatusEl = document.getElementById("dbAuthStatus");
 const saveStatusEl = document.getElementById("saveStatus");
 
+// DB login form inputs
 const dbLoginFormEl = document.getElementById("dbLoginForm");
 const dbHostEl = document.getElementById("dbHost");
 const dbPortEl = document.getElementById("dbPort");
@@ -22,6 +31,9 @@ const createSaveBtnEl = document.getElementById("createSaveBtn");
 const newSaveNameEl = document.getElementById("newSaveName");
 const saveListEl = document.getElementById("saveList");
 
+// ============================================================
+// DOM REFERENCES – In-Game UI (missions, map, HUD)
+// ============================================================
 const missionListEl = document.getElementById("missionList");
 const captionListEl = document.getElementById("captionList");
 const missionPanelTitleEl = document.getElementById("missionPanelTitle");
@@ -36,6 +48,12 @@ const playerNameEl = document.getElementById("playerName");
 const backToSavesBtn = document.getElementById("backToSavesBtn");
 const refreshMissionsBtn = document.getElementById("refreshMissionsBtn");
 
+// ============================================================
+// LEAFLET MAP SETUP
+// Initialises the interactive map centered on Europe,
+// adds the OpenStreetMap tile layer, and moves zoom controls
+// to the bottom-right corner.
+// ============================================================
 const map = L.map("map", {
   zoomControl: false
 }).setView([50.8, 12.5], 4);
@@ -47,35 +65,54 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-let activeRoute = null;
-let preRoute = null;
-let fromMarker = null;
-let toMarker = null;
-let planeMarker = null;
-let playerMarker = null;
-let playerLocation = null;
+// ============================================================
+// MAP OBJECT STATE
+// References to Leaflet layers & markers currently on the map,
+// plus flight animation state.
+// ============================================================
+let activeRoute = null;   // polyline: mission route (from -> to)
+let preRoute = null;      // polyline: player location -> mission start
+let fromMarker = null;    // marker at mission origin airport
+let toMarker = null;      // marker at mission destination airport
+let planeMarker = null;   // animated plane icon during flight
+let playerMarker = null;  // player's current location marker
+let playerLocation = null;// { lat, lon, airport, country }
 let selectedMission = null;
 let animationFrameId = null;
 let isFlying = false;
 
+// ============================================================
+// UTILITY HELPERS
+// ============================================================
+
+// Returns true when both lat and lon are real finite numbers
 function hasValidCoords(lat, lon) {
   return Number.isFinite(lat) && Number.isFinite(lon);
 }
 
+// Formats a number as in-game currency, e.g. "1,200 E"
 function formatMoney(n) {
   return `${n.toLocaleString("en-US")} E`;
 }
 
+// Calculates total payout for a mission
 function missionTotal(m) {
   return m.cargoAmount * m.payRate;
 }
 
+// Forces Leaflet to recalculate map dimensions after layout changes
 function refreshMapSize() {
   requestAnimationFrame(() => map.invalidateSize());
   setTimeout(() => map.invalidateSize(), 120);
   setTimeout(() => map.invalidateSize(), 320);
 }
 
+// ============================================================
+// UI PANEL TOGGLING
+// Switches the left panel between mission list and captain log.
+// ============================================================
+
+// Appends a timestamped line to the captain's log feed
 function appendCaption(text) {
   const line = document.createElement("article");
   line.className = "caption-line";
@@ -84,6 +121,7 @@ function appendCaption(text) {
   captionListEl.scrollTop = captionListEl.scrollHeight;
 }
 
+// Switches panel to the "Captain Log" live feed view
 function showCaptainLog(mission) {
   missionPanelTitleEl.textContent = "Captain Log";
   missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.name}`;
@@ -93,6 +131,7 @@ function showCaptainLog(mission) {
   refreshMapSize();
 }
 
+// Switches panel back to the mission selection list
 function showMissionSelection() {
   missionPanelTitleEl.textContent = "Available Missions";
   missionPanelSubtitleEl.textContent = "Tap a mission to preview route and payout.";
@@ -101,6 +140,12 @@ function showMissionSelection() {
   refreshMapSize();
 }
 
+// ============================================================
+// MAP DRAWING
+// Functions that add/remove markers and route lines on the map.
+// ============================================================
+
+// Removes all mission-related layers from the map
 function clearMapObjects() {
   if (activeRoute) map.removeLayer(activeRoute);
   if (preRoute) map.removeLayer(preRoute);
@@ -115,6 +160,7 @@ function clearMapObjects() {
   planeMarker = null;
 }
 
+// Places (or updates) the player's current-position marker on the map
 function drawPlayerLocationMarker() {
   if (!playerLocation || !hasValidCoords(playerLocation.lat, playerLocation.lon)) {
     return;
@@ -136,6 +182,7 @@ function drawPlayerLocationMarker() {
   playerMarker.bindPopup(`You are here: ${playerLocation.airport}, ${playerLocation.country}`);
 }
 
+// Draws the full route for a mission: player -> pickup -> destination
 function drawMission(mission) {
   selectedMission = mission;
   clearMapObjects();
@@ -186,6 +233,12 @@ function drawMission(mission) {
   flightProgressEl.style.width = "0%";
 }
 
+// ============================================================
+// FLIGHT ANIMATION
+// Animates the plane marker along the route during a mission.
+// ============================================================
+
+// Interpolates the plane marker between two points (t = 0..1)
 function setPlanePosition(start, end, t) {
   const lat = start.lat + (end.lat - start.lat) * t;
   const lon = start.lon + (end.lon - start.lon) * t;
@@ -205,6 +258,7 @@ function setPlanePosition(start, end, t) {
   }
 }
 
+// Cancels the running animation loop and re-enables the start button
 function stopFlightAnimation() {
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
@@ -214,6 +268,13 @@ function stopFlightAnimation() {
   startMissionBtn.disabled = false;
 }
 
+// ============================================================
+// BACKEND API COMMUNICATION
+// All fetch calls go through fetchJson(), which attaches the
+// DB session token header automatically.
+// ============================================================
+
+// Generic JSON fetcher – attaches session token & handles errors
 async function fetchJson(url, options = {}) {
   const headers = {
     ...(options.headers || {})
@@ -233,6 +294,12 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+// ============================================================
+// SAVE MANAGEMENT
+// Lists, creates, and deletes pilot save slots.
+// ============================================================
+
+// Renders the list of save-game cards in the save selection screen
 function renderSaveList(saves) {
   saveListEl.innerHTML = "";
   selectedSaveName = "";
@@ -265,6 +332,7 @@ function renderSaveList(saves) {
   });
 }
 
+// Fetches all saves from backend and renders them
 async function loadSaves() {
   saveStatusEl.textContent = "Loading saves...";
   const data = await fetchJson("/api/saves");
@@ -272,6 +340,11 @@ async function loadSaves() {
   saveStatusEl.textContent = "Select save to continue";
 }
 
+// ============================================================
+// GAME STATE
+// Loads the player's current money, CO2 budget, and location
+// from the backend and updates the HUD.
+// ============================================================
 async function loadGameState() {
   const data = await fetchJson(`/api/game-state?player=${encodeURIComponent(playerName)}`);
   creditsEl.textContent = String(data.money);
@@ -291,6 +364,12 @@ async function loadGameState() {
   }
 }
 
+// ============================================================
+// MISSION LIST RENDERING
+// Builds and displays the clickable mission cards.
+// ============================================================
+
+// Creates a single mission card DOM element
 function createMissionCard(mission, index) {
   const card = document.createElement("article");
   card.className = `mission-card ${mission.legal ? "" : "illegal"}`;
@@ -317,6 +396,7 @@ function createMissionCard(mission, index) {
   return card;
 }
 
+// Renders the full mission list and auto-selects the first one
 function renderMissionList() {
   showMissionSelection();
   missionListEl.innerHTML = "";
@@ -331,6 +411,7 @@ function renderMissionList() {
   }
 }
 
+// Fetches missions from backend for the current player
 async function loadMissions() {
   startMissionBtn.disabled = true;
   routeLabelEl.textContent = "Loading missions from backend...";
@@ -356,6 +437,7 @@ async function loadMissions() {
   }
 }
 
+// Creates a new save with the name entered in the input field
 async function createSave() {
   const pilot = newSaveNameEl.value.trim();
   if (!pilot) {
@@ -377,6 +459,7 @@ async function createSave() {
   saveStatusEl.textContent = `Save created: ${pilot}`;
 }
 
+// Deletes the currently highlighted save after user confirmation
 async function deleteSelectedSave() {
   if (!selectedSaveName) {
     return;
@@ -402,6 +485,13 @@ async function deleteSelectedSave() {
   await loadSaves();
 }
 
+// ============================================================
+// MISSION EXECUTION
+// Handles the full flight sequence: animation, captain log
+// messages, and backend completion call.
+// ============================================================
+
+// Sends the completed mission to the backend to update stats
 async function completeMissionOnBackend(mission) {
   return fetchJson("/api/start-mission", {
     method: "POST",
@@ -415,6 +505,11 @@ async function completeMissionOnBackend(mission) {
   });
 }
 
+// Main flight sequence: animates the plane through three legs:
+//   1. Fly from player location to mission pickup airport
+//   2. Hold at pickup while cargo is loaded
+//   3. Fly from pickup to destination
+// After landing, calls the backend and refreshes game state.
 function startSelectedMission() {
   if (!selectedMission || isFlying) {
     return;
@@ -525,6 +620,12 @@ function startSelectedMission() {
   animationFrameId = requestAnimationFrame(step);
 }
 
+// ============================================================
+// SCREEN NAVIGATION
+// Transitions between auth -> save select -> game screens.
+// ============================================================
+
+// Loads the selected save and transitions to the main game view
 async function enterGameWithSelectedSave() {
   if (!selectedSaveName) {
     return;
@@ -544,6 +645,7 @@ async function enterGameWithSelectedSave() {
   refreshMapSize();
 }
 
+// Returns from the game view back to the save selection screen
 async function goBackToSaves() {
   stopFlightAnimation();
   gameAppEl.classList.add("app-hidden");
@@ -554,6 +656,12 @@ async function goBackToSaves() {
   await loadSaves();
 }
 
+// ============================================================
+// EVENT LISTENERS
+// Wires up all buttons and forms to their handler functions.
+// ============================================================
+
+// DB login form – authenticates against MariaDB via the backend
 dbLoginFormEl.addEventListener("submit", async (event) => {
   event.preventDefault();
   dbAuthStatusEl.textContent = "Connecting to MariaDB...";
@@ -622,6 +730,7 @@ refreshMissionsBtn.addEventListener("click", async () => {
   }
 });
 
+// Start flight & back-to-saves buttons
 startMissionBtn.addEventListener("click", startSelectedMission);
 backToSavesBtn.addEventListener("click", () => {
   goBackToSaves().catch(() => {
@@ -629,6 +738,12 @@ backToSavesBtn.addEventListener("click", () => {
   });
 });
 
+// ============================================================
+// BOOTSTRAP
+// Entry point – decides which screen to show on page load.
+// If a previous DB session token exists in localStorage, skips
+// the login screen and goes straight to save selection.
+// ============================================================
 function bootstrap() {
   authOverlayEl.classList.remove("hidden");
   saveOverlayEl.classList.add("hidden");
