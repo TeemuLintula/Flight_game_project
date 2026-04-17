@@ -107,7 +107,7 @@ function refreshMapSize() {
   setTimeout(() => map.invalidateSize(), 320);
 }
 
-// Generates a button for missons sart and other stuff
+// Generates a button for missions start and other actions
 function renderButton(text, onClick) {
   const btnbox = document.getElementById("missionActions");
   if (!btnbox) return null;
@@ -743,7 +743,6 @@ refreshMissionsBtn.addEventListener("click", async () => {
 });
 
 // Start flight & back-to-saves buttons
-startMissionBtn.addEventListener("click", startSelectedMission);
 backToSavesBtn.addEventListener("click", () => {
   goBackToSaves().catch(() => {
     saveStatusEl.textContent = "Could not return to saves";
