@@ -107,6 +107,18 @@ function refreshMapSize() {
   setTimeout(() => map.invalidateSize(), 320);
 }
 
+// Generates a button for missons sart and other stuff
+function renderButton(text, onClick) {
+  const btnbox = document.getElementById("missionActions");
+  if (!btnbox) return null;
+  const btn = document.createElement("button");
+  btn.className = "mission-btn";
+  btn.textContent = text;
+  btn.addEventListener("click", onClick);
+  btnbox.appendChild(btn);
+  return btn;
+}
+
 // ============================================================
 // UI PANEL TOGGLING
 // Switches the left panel between mission list and captain log.
