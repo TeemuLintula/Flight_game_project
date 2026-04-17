@@ -66,10 +66,10 @@ def game_state():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT money, co2_budget, co2_consumed, location, screen_name
-        FROM game
-        WHERE screen_name = %s
-    """, (player,))
+                   SELECT money, co2_budget, co2_consumed, location, screen_name
+                   FROM game
+                   WHERE screen_name = %s
+                   """, (player,))
 
     row = cursor.fetchone()
 
@@ -78,10 +78,25 @@ def game_state():
 
     money, budget, consumed, location, screen_name = row
 
+    cursor.execute("""
+                   SELECT airport.name,
+                          country.name,
+                          airport.latitude_deg,
+                          airport.longitude_deg
+                   FROM airport
+                            JOIN country ON airport.iso_country = country.iso_country
+                   WHERE airport.ident = %s
+                   """, (location,))
+
+    airport_name, country_name, lat, lon = cursor.fetchone()
+
     return jsonify({
         "money": money,
         "co2_remaining": budget - consumed,
-        "location": location,
+        "location_airport": airport_name,
+        "location_country": country_name,
+        "location_lat": float(lat),
+        "location_lon": float(lon),
         "player": screen_name
     })
 @app.route("/api/callMissions", methods=["GET"])
