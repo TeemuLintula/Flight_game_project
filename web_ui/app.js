@@ -107,6 +107,18 @@ function refreshMapSize() {
   setTimeout(() => map.invalidateSize(), 320);
 }
 
+// Generates a button for missions start and other actions
+function renderButton(text, onClick) {
+  const btnbox = document.getElementById("missionActions");
+  if (!btnbox) return null;
+  const btn = document.createElement("button");
+  btn.className = "mission-btn";
+  btn.textContent = text;
+  btn.addEventListener("click", onClick);
+  btnbox.appendChild(btn);
+  return btn;
+}
+
 // ============================================================
 // UI PANEL TOGGLING
 // Switches the left panel between mission list and captain log.
@@ -744,7 +756,6 @@ refreshMissionsBtn.addEventListener("click", async () => {
 });
 
 // Start flight & back-to-saves buttons
-startMissionBtn.addEventListener("click", startSelectedMission);
 backToSavesBtn.addEventListener("click", () => {
   goBackToSaves().catch(() => {
     saveStatusEl.textContent = "Could not return to saves";
