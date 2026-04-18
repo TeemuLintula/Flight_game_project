@@ -5,6 +5,18 @@ import random
 #tallentaa luodut yhteydet palvelimeen
 connections = {}
 app = Flask(__name__, template_folder='web_ui')
+
+def get_conn():
+    """Get the DB connection for the current session, reconnecting if needed."""
+    session_id = request.headers.get("X-DB-Session")
+    conn = connections.get(session_id)
+    if not conn:
+        return None
+    try:
+        conn.ping(reconnect=True)
+    except Exception:
+        return None
+    return conn
 @app.route('/flight_game_run')
 def flight_game_run():
     return render_template("index.html")
@@ -24,8 +36,7 @@ def db_login():
 #Kerää kaikki savefilet sql:stä
 @app.route("/api/saves", methods=["GET"])
 def saves():
-    session_id = request.headers.get("X-DB-Session")
-    conn = connections.get(session_id)
+    conn = get_conn()
     if not conn:
         print("no connection")
         return jsonify({"error": "Session expired"}), 401
@@ -55,9 +66,7 @@ def saves():
 #valitsee saven ja aloittaa pelin
 @app.route("/api/game-state", methods=["GET"])
 def game_state():
-    session_id = request.headers.get("X-DB-Session")
-    conn = connections.get(session_id)
-
+    conn = get_conn()
     if not conn:
         return jsonify({"error": "No session"}), 401
 
@@ -101,8 +110,7 @@ def game_state():
     })
 @app.route("/api/callMissions", methods=["GET"])
 def callMissions():
-    session_id = request.headers.get("X-DB-Session")
-    conn = connections.get(session_id)
+    conn = get_conn()
     if not conn:
         print("no connection")
         return jsonify({"error": "Session expired"}), 401

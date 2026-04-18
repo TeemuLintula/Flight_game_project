@@ -750,12 +750,15 @@ deleteSaveBtnEl.addEventListener("click", () => {
 });
 
 continueBtnEl.addEventListener("click", async () => {
+  if (continueBtnEl.disabled) return;
+  continueBtnEl.disabled = true;
   try {
     saveStatusEl.textContent = "Loading pilot save...";
     await enterGameWithSelectedSave();
   } catch (_error) {
     console.log(_error.message);
     saveStatusEl.textContent = "Could not load selected save";
+    continueBtnEl.disabled = false;
   }
 });
 
