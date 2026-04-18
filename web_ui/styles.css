@@ -30,7 +30,7 @@ body {
     radial-gradient(circle at 95% 18%, #d4ecff 0%, transparent 38%),
     linear-gradient(135deg, var(--bg-1), var(--bg-2));
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 body.game-mode {
@@ -271,7 +271,8 @@ h1 {
   display: grid;
   grid-template-columns: 1.55fr 1fr;
   gap: 18px;
-  min-height: 78vh;
+  height: 85vh;
+  max-height: 85vh;
 }
 
 .glass {
@@ -287,6 +288,8 @@ h1 {
   padding: 14px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .panel-head h2 {
@@ -342,6 +345,7 @@ h1 {
   justify-content: center;
   gap: 15px;
   flex-wrap: wrap;
+  margin: 15px 0 0;
 }
 
 .start-btn:hover {
@@ -432,8 +436,10 @@ h1 {
 .mission-list {
   display: grid;
   gap: 10px;
-  overflow: auto;
+  overflow-y: auto;
   padding-right: 4px;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .mission-list.hidden {
@@ -443,8 +449,10 @@ h1 {
 .caption-list {
   display: grid;
   gap: 8px;
-  overflow: auto;
+  overflow-y: auto;
   padding-right: 4px;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .caption-list.hidden {
