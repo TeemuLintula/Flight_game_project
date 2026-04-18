@@ -36,6 +36,8 @@ const saveListEl = document.getElementById("saveList");
 // ============================================================
 const missionListEl = document.getElementById("missionList");
 const captionListEl = document.getElementById("captionList");
+const baseListEl = document.getElementById("baseList");
+const missionBasetglEl = document.getElementById("missionBasetgl");
 const missionPanelTitleEl = document.getElementById("missionPanelTitle");
 const missionPanelSubtitleEl = document.getElementById("missionPanelSubtitle");
 const routeLabelEl = document.getElementById("routeLabel");
@@ -121,7 +123,7 @@ function renderButton(text, onClick) {
 
 // ============================================================
 // UI PANEL TOGGLING
-// Switches the left panel between mission list and captain log.
+// Switches the left panel between mission list, captain log, and base selection.
 // ============================================================
 
 // Appends a timestamped line to the captain's log feed
@@ -139,6 +141,7 @@ function showCaptainLog(mission) {
   missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.Name}`;
   missionListEl.classList.add("hidden");
   captionListEl.classList.remove("hidden");
+  baseListEl.classList.add("hidden");
   captionListEl.innerHTML = "";
   refreshMapSize();
 }
@@ -149,8 +152,30 @@ function showMissionSelection() {
   missionPanelSubtitleEl.textContent = "Tap a mission to preview route and payout.";
   captionListEl.classList.add("hidden");
   missionListEl.classList.remove("hidden");
+  baseListEl.classList.add("hidden");
   refreshMapSize();
 }
+
+function showBaseselection() {
+  missionPanelTitleEl.textContent = "Select Base";
+  missionPanelSubtitleEl.textContent = "Choose your home airport to start flying.";
+  captionListEl.classList.add("hidden");
+  missionListEl.classList.add("hidden");
+  baseListEl.classList.remove("hidden");
+  refreshMapSize();
+}
+
+function toggleBaseSelection() {
+  missionBasetglEl.classList.toggle("active");
+  if (missionBasetglEl.classList.contains("active")) {
+    missionBasetglEl.textContent = "Show Missions";
+    showBaseselection();
+  } else {
+    missionBasetglEl.textContent = "Select Bases";
+    showMissionSelection();
+  }
+}
+missionBasetglEl.addEventListener("click", toggleBaseSelection);
 
 // ============================================================
 // MAP DRAWING

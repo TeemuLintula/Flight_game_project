@@ -433,6 +433,10 @@ h1 {
   background: #d14a1f;
 }
 
+#missionBasetgl {
+  margin: 7px;
+}
+
 .mission-list {
   display: grid;
   gap: 10px;
