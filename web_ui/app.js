@@ -136,7 +136,7 @@ function appendCaption(text) {
 // Switches panel to the "Captain Log" live feed view
 function showCaptainLog(mission) {
   missionPanelTitleEl.textContent = "Captain Log";
-  missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.name}`;
+  missionPanelSubtitleEl.textContent = `Live flight feed for ${mission.Name}`;
   missionListEl.classList.add("hidden");
   captionListEl.classList.remove("hidden");
   captionListEl.innerHTML = "";
@@ -203,10 +203,10 @@ function drawMission(mission) {
 
   const origin = playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)
     ? [playerLocation.lat, playerLocation.lon]
-    : [mission.from.lat, mission.from.lon];
+    : [mission.Location[0][2], mission.Location[0][3]];
 
-  const from = [mission.from.lat, mission.from.lon];
-  const to = [mission.to.lat, mission.to.lon];
+  const from = [mission.Location[0][2], mission.Location[0][3]];
+  const to = [mission.Destination[0][2], mission.Destination[0][3]];
 
   fromMarker = L.marker(from, {
     icon: L.divIcon({
@@ -215,7 +215,7 @@ function drawMission(mission) {
       iconSize: [18, 18],
       iconAnchor: [9, 9]
     })
-  }).addTo(map).bindPopup(`Start: ${mission.from.airport}, ${mission.from.country}`);
+  }).addTo(map).bindPopup(`Start: ${mission.Location[0][0]}, ${mission.Location[0][1]}`);
 
   toMarker = L.marker(to, {
     icon: L.divIcon({
@@ -224,7 +224,7 @@ function drawMission(mission) {
       iconSize: [18, 18],
       iconAnchor: [9, 9]
     })
-  }).addTo(map).bindPopup(`Destination: ${mission.to.airport}, ${mission.to.country}`);
+  }).addTo(map).bindPopup(`Destination: ${mission.Destination[0][0]}, ${mission.Destination[0][1]}`);
 
   preRoute = L.polyline([origin, from], {
     color: "#1f6687",
@@ -240,7 +240,7 @@ function drawMission(mission) {
 
   const bounds = L.featureGroup([preRoute, activeRoute]).getBounds();
   map.fitBounds(bounds, { padding: [40, 40] });
-  routeLabelEl.textContent = `${mission.name}: Your Location -> ${mission.from.airport} -> ${mission.to.airport}`;
+  routeLabelEl.textContent = `${mission.Name}: Your Location -> ${mission.Location[0][0]} -> ${mission.Destination[0][0]}`;
   flightStatusEl.textContent = "Ready for departure";
   flightProgressEl.style.width = "0%";
 }
@@ -277,7 +277,9 @@ function stopFlightAnimation() {
     animationFrameId = null;
   }
   isFlying = false;
-  startMissionBtn.disabled = false;
+  if (startMissionBtn){
+      startMissionBtn.disabled = false;
+  }
 }
 
 // ============================================================
@@ -396,8 +398,8 @@ function createMissionCard(mission, index) {
       : "units";
 
   card.innerHTML = `
-    <h3 class="mission-title">${mission.name}</h3>
-    <p class="mission-meta">${mission.location[0][1]} -> ${mission.destination[0][1]}</p>
+    <h3 class="mission-title">${mission.Name}</h3>
+    <p class="mission-meta">${mission.Location[0][1]} -> ${mission.Destination[0][1]}</p>
     <p class="mission-meta">Cargo: ${mission.cargoAmount} ${cargoUnit} (${mission.cargo})</p>
     <div class="meta-row">
       <span class="tag ${isRisky ? "risky" : ""}">${isRisky ? "RISKY" : "NO RISK"}</span>
@@ -437,7 +439,9 @@ function renderMissionList() {
 
 // Fetches missions from backend for the current player
 async function loadMissions() {
-  startMissionBtn.disabled = true;
+  if (startMissionBtn) {
+    startMissionBtn.disabled = true;
+  }
   routeLabelEl.textContent = "Loading missions from backend...";
   try {
     const data = await fetchJson(`/api/callMissions?player=${encodeURIComponent(playerName)}&count=5`);
@@ -447,18 +451,24 @@ async function loadMissions() {
       missionListEl.innerHTML = "<p class='mission-meta'>No missions available right now.</p>";
       routeLabelEl.textContent = "No route available";
       flightStatusEl.textContent = "Idle";
+      if (startMissionBtn) {
       startMissionBtn.disabled = true;
+    }
       return;
     }
 
     renderMissionList();
-    startMissionBtn.disabled = false;
+      if (startMissionBtn){
+      startMissionBtn.disabled = false;
+    }
   } catch (error) {
     console.log(error.message);
     missionListEl.innerHTML = "<p class='mission-meta'>Could not load missions. Try refresh.</p>";
     routeLabelEl.textContent = "Mission load failed";
     flightStatusEl.textContent = "Mission service unavailable";
-    startMissionBtn.disabled = false;
+      if (startMissionBtn){
+      startMissionBtn.disabled = false;
+    }
   }
 }
 
@@ -542,22 +552,24 @@ function startSelectedMission() {
 
   stopFlightAnimation();
   showCaptainLog(selectedMission);
-  appendCaption(`Mission accepted: ${selectedMission.name}`);
-  appendCaption(`Routing to pickup airport ${selectedMission.from.airport}.`);
+  appendCaption(`Mission accepted: ${selectedMission.Name}`);
+  appendCaption(`Routing to pickup airport ${selectedMission.Location[0][0]}.`);
 
   isFlying = true;
+  if (startMissionBtn) {
   startMissionBtn.disabled = true;
-  flightStatusEl.textContent = `In flight to mission start: ${selectedMission.from.airport}`;
+  }
+  flightStatusEl.textContent = `In flight to mission start: ${selectedMission.Location[0][0]}`;
 
   const durationMs = 22000;
   const startTime = performance.now();
 
   const legAStart = playerLocation
     ? { lat: playerLocation.lat, lon: playerLocation.lon }
-    : { lat: selectedMission.from.lat, lon: selectedMission.from.lon };
-  const legAEnd = { lat: selectedMission.from.lat, lon: selectedMission.from.lon };
-  const legBStart = { lat: selectedMission.from.lat, lon: selectedMission.from.lon };
-  const legBEnd = { lat: selectedMission.to.lat, lon: selectedMission.to.lon };
+    : { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
+  const legAEnd = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
+  const legBStart = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
+  const legBEnd = { lat: selectedMission.Destination[0][2], lon: selectedMission.Destination[0][3] };
   const legAEndPct = 0.35;
   const holdEndPct = 0.58;
   const milestones = new Set();
@@ -574,7 +586,7 @@ function startSelectedMission() {
 
     if (progress < legAEndPct) {
       setPlanePosition(legAStart, legAEnd, progress / legAEndPct);
-      flightStatusEl.textContent = `Flying to mission start: ${selectedMission.from.airport}`;
+      flightStatusEl.textContent = `Flying to mission start: ${selectedMission.Location[0][0]}`;
       if (!milestones.has("depart")) {
         appendCaption(`Departed from ${playerLocation?.airport || "current position"}.`);
         milestones.add("depart");
@@ -587,10 +599,10 @@ function startSelectedMission() {
       setPlanePosition(legAEnd, legAEnd, 1);
       const loadProgress = (progress - legAEndPct) / (holdEndPct - legAEndPct);
       const remainingSec = Math.max(0, Math.ceil((1 - loadProgress) * 8));
-      flightStatusEl.textContent = `Loading at ${selectedMission.from.airport} (${remainingSec}s)`;
+      flightStatusEl.textContent = `Loading at ${selectedMission.Location[0][0]} (${remainingSec}s)`;
 
       if (!milestones.has("pickup")) {
-        appendCaption(`Reached pickup airport ${selectedMission.from.airport}.`);
+        appendCaption(`Reached pickup airport ${selectedMission.Location[0][0]}.`);
         appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
         milestones.add("pickup");
       }
@@ -599,12 +611,12 @@ function startSelectedMission() {
         milestones.add("event-load");
       }
       if (loadProgress > 0.92 && !milestones.has("pushback")) {
-        appendCaption(`Pushback approved. Taxiing for departure to ${selectedMission.to.airport}.`);
+        appendCaption(`Pushback approved. Taxiing for departure to ${selectedMission.Destination[0][0]}.`);
         milestones.add("pushback");
       }
     } else {
       setPlanePosition(legBStart, legBEnd, (progress - holdEndPct) / (1 - holdEndPct));
-      flightStatusEl.textContent = `Flying mission route: ${selectedMission.from.airport} -> ${selectedMission.to.airport}`;
+      flightStatusEl.textContent = `Flying mission route: ${selectedMission.Location[0][0]} -> ${selectedMission.Destination[0][0]}`;
       if (progress > 0.7 && !milestones.has("event-b")) {
         appendCaption(airEvents[Math.floor(Math.random() * airEvents.length)]);
         milestones.add("event-b");
@@ -622,16 +634,16 @@ function startSelectedMission() {
     completeMissionOnBackend(selectedMission)
       .then(async (result) => {
         playerLocation = {
-          lat: selectedMission.to.lat,
-          lon: selectedMission.to.lon,
-          airport: selectedMission.to.airport,
-          country: selectedMission.to.country
+          lat: selectedMission.Destination[0][2],
+          lon: selectedMission.Destination[0][3],
+          airport: selectedMission.Destination[0][0],
+          country: selectedMission.Destination[0][1]
         };
         drawPlayerLocationMarker();
         creditsEl.textContent = String(result.money);
         co2BudgetEl.textContent = String(result.co2_remaining);
         flightStatusEl.textContent = `Mission complete: ${selectedMission.name} (+${formatMoney(result.payout)})`;
-        appendCaption(`Landed at ${selectedMission.to.airport}. Mission complete.`);
+        appendCaption(`Landed at ${selectedMission.Destination[0][0]}. Mission complete.`);
         appendCaption(`Payout received: ${formatMoney(result.payout)}.`);
         await loadGameState();
         await loadMissions();
@@ -742,6 +754,7 @@ continueBtnEl.addEventListener("click", async () => {
     saveStatusEl.textContent = "Loading pilot save...";
     await enterGameWithSelectedSave();
   } catch (_error) {
+    console.log(_error.message);
     saveStatusEl.textContent = "Could not load selected save";
   }
 });
@@ -789,4 +802,4 @@ function bootstrap() {
   }
 }
 
-bootstrap();
+document.addEventListener("DOMContentLoaded", bootstrap);
