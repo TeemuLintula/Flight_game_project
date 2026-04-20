@@ -41,7 +41,6 @@ const missionBasetglEl = document.getElementById("missionBasetgl");
 const missionPanelTitleEl = document.getElementById("missionPanelTitle");
 const missionPanelSubtitleEl = document.getElementById("missionPanelSubtitle");
 const routeLabelEl = document.getElementById("routeLabel");
-const startMissionBtn = document.getElementById("startMissionBtn");
 const flightStatusEl = document.getElementById("flightStatus");
 const flightProgressEl = document.getElementById("flightProgress");
 const creditsEl = document.getElementById("credits");
@@ -121,6 +120,10 @@ function renderButton(text, onClick) {
   return btn;
 }
 
+function clearButtons(){
+  const box = document.getElementById("missionActions");
+  if (box) box.replaceChildren();
+}
 // ============================================================
 // UI PANEL TOGGLING
 // Switches the left panel between mission list, captain log, and base selection.
@@ -144,6 +147,31 @@ function showCaptainLog(mission) {
   baseListEl.classList.add("hidden");
   captionListEl.innerHTML = "";
   refreshMapSize();
+  clearButtons();
+}
+
+function showMissionContract(mission) {
+  missionPanelTitleEl.textContent = "";
+  missionPanelSubtitleEl.textContent = "";
+  captionListEl.classList.remove("hidden");
+  missionListEl.classList.add("hidden");
+  baseListEl.classList.add("hidden");
+  missionBasetglEl.classList.add("hidden");
+
+
+  const contractTXT = `
+      Mission contract for: ${mission.Name} \n
+      This mission is considered ${mission.legal ? "not risky" : "risky"} \n
+      Mission starts from ${mission.Location[0][0]} ${mission.Location[0][1]} \n
+      The end destination is in ${mission.Destination[0][0]} ${mission.Destination[0][1]} \n
+      The type of cargo you will be flying is ${mission.cargo} \n
+      ${mission.legal ? (mission.cargo == "Humans" ? `Amount of passengers: ${mission.cargoAmount}` : `Amount of cargo: ${mission.cargoAmount}Tonne`) : (mission.cargo == "Illegal Humans" ? `Amount of passengers: ${mission.cargoAmount}`: `Amount of cargo: ${mission.cargoAmount}KG`)} \n
+      ${mission.legal ? (mission.cargo == "Humans" ? `Mission will pay: ${mission.payRate}€ per passenger` : `Mission will pay: ${mission.payRate}€ per Tonne`) : (mission.cargo == "Illegal Humans" ? `Mission will pay: ${mission.payRate}€ per passenger`: `Mission will pay: ${mission.payRate}€ per KG`)}
+  `
+  appendCaption(contractTXT)
+  clearButtons();
+  renderButton("Start Mission", startSelectedMission)
+  renderButton("Change Mission", showMissionSelection)
 }
 
 // Switches panel back to the mission selection list
@@ -154,6 +182,7 @@ function showMissionSelection() {
   missionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
   refreshMapSize();
+  clearButtons();
 }
 
 function showBaseselection() {
@@ -164,6 +193,7 @@ function showBaseselection() {
   baseListEl.classList.remove("hidden");
   loadBases();
   refreshMapSize();
+  clearButtons();
 }
 
 function toggleBaseSelection() {
@@ -303,9 +333,6 @@ function stopFlightAnimation() {
     animationFrameId = null;
   }
   isFlying = false;
-  if (startMissionBtn){
-      startMissionBtn.disabled = false;
-  }
 }
 
 // ============================================================
@@ -410,8 +437,6 @@ async function loadGameState() {
 // ============================================================
 
 function createMissionCard(mission, index) {
-  console.log("mission card luotu");
-
   const isRisky = !mission.legal;
 
   const card = document.createElement("article");
@@ -435,13 +460,18 @@ function createMissionCard(mission, index) {
 
   card.addEventListener("click", () => {
     stopFlightAnimation();
-
-    document.querySelectorAll(".mission-card").forEach((el) =>
+    //Tuplaklikkaamalla avaa tehtävän muuten se valitsee sen pikanäkymään :)
+    if (card.classList.contains("active")){
+      showMissionContract(mission)
+    }
+    else {
+      document.querySelectorAll(".mission-card").forEach((el) =>
       el.classList.remove("active")
     );
 
     card.classList.add("active");
     drawMission(mission);
+    }
   });
 
   return card;
@@ -465,9 +495,6 @@ function renderMissionList() {
 
 // Fetches missions from backend for the current player
 async function loadMissions() {
-  if (startMissionBtn) {
-    startMissionBtn.disabled = true;
-  }
   routeLabelEl.textContent = "Loading missions from backend...";
   try {
     const data = await fetchJson(`/api/callMissions?player=${encodeURIComponent(playerName)}&count=5`);
@@ -477,24 +504,15 @@ async function loadMissions() {
       missionListEl.innerHTML = "<p class='mission-meta'>No missions available right now.</p>";
       routeLabelEl.textContent = "No route available";
       flightStatusEl.textContent = "Idle";
-      if (startMissionBtn) {
-      startMissionBtn.disabled = true;
-    }
       return;
     }
 
     renderMissionList();
-      if (startMissionBtn){
-      startMissionBtn.disabled = false;
-    }
   } catch (error) {
     console.log(error.message);
     missionListEl.innerHTML = "<p class='mission-meta'>Could not load missions. Try refresh.</p>";
     routeLabelEl.textContent = "Mission load failed";
     flightStatusEl.textContent = "Mission service unavailable";
-      if (startMissionBtn){
-      startMissionBtn.disabled = false;
-    }
   }
 }
 
@@ -653,9 +671,6 @@ function startSelectedMission() {
   appendCaption(`Routing to pickup airport ${selectedMission.Location[0][0]}.`);
 
   isFlying = true;
-  if (startMissionBtn) {
-  startMissionBtn.disabled = true;
-  }
   flightStatusEl.textContent = `In flight to mission start: ${selectedMission.Location[0][0]}`;
 
   const durationMs = 22000;
