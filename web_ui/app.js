@@ -92,9 +92,9 @@ function hasValidCoords(lat, lon) {
   return Number.isFinite(lat) && Number.isFinite(lon);
 }
 
-// Formats a number as in-game currency, e.g. "1,200 E"
+// Formats a number as in-game currency, e.g. "1,200 €"
 function formatMoney(n) {
-  return `${n.toLocaleString("en-US")} E`;
+  return `${n.toLocaleString("en-US")} €`;
 }
 
 // Calculates total payout for a mission
@@ -162,6 +162,7 @@ function showBaseselection() {
   captionListEl.classList.add("hidden");
   missionListEl.classList.add("hidden");
   baseListEl.classList.remove("hidden");
+  loadBases();
   refreshMapSize();
 }
 
@@ -497,6 +498,77 @@ async function loadMissions() {
   }
 }
 
+// ============================================================
+// Base cards rendering
+// ============================================================
+
+// makes the card for the base selection screen
+function createBaseCard(base) {
+  const card = document.createElement("article");
+  card.className = "mission-card";
+  card.innerHTML = `
+    <h3 class="mission-title">${base.airport}</h3>
+    <p class="mission-meta">${base.country}</p>
+  `;
+
+  card.addEventListener("click", () => {
+    stopFlightAnimation();
+
+    document.querySelectorAll(".mission-card").forEach((el) =>
+      el.classList.remove("active")
+    );
+
+    card.classList.add("active");
+    clearMapObjects();
+    drawPlayerLocationMarker();
+
+    const baseLat = base.lat;
+    const baseLon = base.lon;
+
+    fromMarker = L.marker([baseLat, baseLon], {
+      icon: L.divIcon({ className: "marker-icon", html: '<div class="start-marker"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
+    }).addTo(map).bindPopup(`${base.airport} (${base.country})`).openPopup();
+
+    if (playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)) {
+      preRoute = L.polyline(
+        [[playerLocation.lat, playerLocation.lon], [baseLat, baseLon]],
+        { color: "#1f6687", weight: 3, dashArray: "6 8" }
+      ).addTo(map);
+      map.fitBounds(preRoute.getBounds(), { padding: [40, 40] });
+    } else {
+      map.setView([baseLat, baseLon], 6);
+    }
+
+    routeLabelEl.textContent = `Base: ${base.airport} (${base.country})`;
+  });
+  return card;
+}
+
+// Renders the list of available bases in the base selection screen
+function renderBaseList(bases) {
+  console.log("basejen renderöinti aloitettu");
+  baseListEl.innerHTML = "";
+  bases.forEach((base) => {
+    console.log(base);
+    baseListEl.appendChild(createBaseCard(base));
+  });
+}
+
+// Fetches available bases from backend and renders them
+async function loadBases() {
+  routeLabelEl.textContent = "Loading bases from backend...";
+  try {
+    const data = await fetchJson(`/api/bases?player=${encodeURIComponent(playerName)}`);
+    const bases = Array.isArray(data.bases) ? data.bases : [];
+    console.log(bases);
+    renderBaseList(bases);
+  } catch (error) {
+    console.log(error.message);
+    baseListEl.innerHTML = "<p class='mission-meta'>Could not load bases. Try refresh.</p>";
+    routeLabelEl.textContent = "Base load failed";
+  }
+}
+
 // Creates a new save with the name entered in the input field
 async function createSave() {
   const pilot = newSaveNameEl.value.trim();
@@ -667,7 +739,7 @@ function startSelectedMission() {
         drawPlayerLocationMarker();
         creditsEl.textContent = String(result.money);
         co2BudgetEl.textContent = String(result.co2_remaining);
-        flightStatusEl.textContent = `Mission complete: ${selectedMission.name} (+${formatMoney(result.payout)})`;
+        flightStatusEl.textContent = `Mission complete: ${selectedMission.Name} (+${formatMoney(result.payout)})`;
         appendCaption(`Landed at ${selectedMission.Destination[0][0]}. Mission complete.`);
         appendCaption(`Payout received: ${formatMoney(result.payout)}.`);
         await loadGameState();

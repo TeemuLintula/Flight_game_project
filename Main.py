@@ -125,6 +125,31 @@ def callMissions():
     print(jsonify({"missions": missions}))
     return jsonify({"missions": missions})
 
+@app.route("/api/bases", methods=["GET"])
+def bases():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+    cursor = conn.cursor()
+    player = request.args.get("player")
+    cursor.execute("""
+        SELECT hb.name, hb.continent, hb.latitude_deg, hb.longitude_deg, hb.ident, hb.plants
+        FROM game_home_base ghb
+        JOIN home_base hb ON ghb.base_ident = hb.ident
+        WHERE ghb.game_id = (SELECT id FROM game WHERE screen_name = %s)
+    """, (player,))
+    rows = cursor.fetchall()
+    bases = []
+    for name, continent, lat, lon, ident, plants in rows:
+        bases.append({
+            "airport": name,
+            "country": continent,
+            "lat": float(lat),
+            "lon": float(lon),
+            "ident": ident,
+            "plants": plants
+        })
+    return jsonify({"bases": bases})
 
 @app.route('/app.js')
 def js():

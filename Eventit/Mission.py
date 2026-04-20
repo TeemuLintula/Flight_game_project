@@ -5,12 +5,12 @@ from Eventit import GameSetup
 # Asettaa muuttujien arvot
 mission = {
     "Name": "",
-    "Legal": True,
+    "legal": True,
     "Location": "",
     "Destination": "",
-    "Pay": 0,
-    "Cargo": "",
-    "Cargo_amount": 0
+    "payRate": 0,
+    "cargo": "",
+    "cargoAmount": 0
 }
 # Generoi tehtävän
 def GenerateMission(cursor):
@@ -52,12 +52,12 @@ def GenerateMission(cursor):
 
     mission={
         "Name": Name,
-        "Legal": Legal,
+        "legal": Legal,
         "Location": Location,
         "Destination": Destination,
-        "Pay": Pay,
-        "Cargo": Cargo,
-        "Cargo_amount": Cargo_amount
+        "payRate": Pay,
+        "cargo": Cargo,
+        "cargoAmount": Cargo_amount
     }
 
     return mission
