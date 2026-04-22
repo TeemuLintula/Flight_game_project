@@ -125,6 +125,73 @@ def callMissions():
     print(jsonify({"missions": missions}))
     return jsonify({"missions": missions})
 
+@app.route("/api/start-mission", methods=["POST"])
+def start_mission():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json()
+    player = data.get("player")
+    mission = data.get("mission")
+
+    if not player or not mission:
+        return jsonify({"error": "Missing player or mission data"}), 400
+
+    cursor = conn.cursor()
+
+    # Calculate payout: cargoAmount * payRate
+    cargo_amount = mission.get("cargoAmount", 0)
+    pay_rate = mission.get("payRate", 0)
+    payout = int(cargo_amount) * int(pay_rate)
+
+    # Get destination airport ident
+    destination = mission.get("Destination", [])
+    if not destination or len(destination[0]) < 5:
+        return jsonify({"error": "Invalid mission destination", "debug": destination}), 400
+    dest_ident = destination[0][4]  # airport ident is 5th element (index 4)
+
+    # Calculate approximate CO2 based on distance (rough estimate: 0.25kg per km)
+    origin = mission.get("Location", [])
+    if origin and len(origin) > 0 and len(origin[0]) >= 4:
+        orig_lat = float(origin[0][2])
+        orig_lon = float(origin[0][3])
+        dest_lat = float(destination[0][2])
+        dest_lon = float(destination[0][3])
+        lat_diff = abs(dest_lat - orig_lat)
+        lon_diff = abs(dest_lon - orig_lon)
+        distance_km = (lat_diff + lon_diff) * 111
+        co2_used = int(distance_km * 0.25)
+    else:
+        co2_used = 100  # default fallback
+
+    # Update player: add money, deduct CO2, update location
+    cursor.execute("""
+        UPDATE game
+        SET money = money + %s,
+            co2_consumed = co2_consumed + %s,
+            location = %s
+        WHERE screen_name = %s
+    """, (payout, co2_used, dest_ident, player))
+    conn.commit()
+
+    # Get updated values to return
+    cursor.execute("""
+        SELECT money, co2_budget - co2_consumed as co2_remaining
+        FROM game
+        WHERE screen_name = %s
+    """, (player,))
+    row = cursor.fetchone()
+
+    if not row:
+        return jsonify({"error": "Player not found after update"}), 500
+
+    return jsonify({
+        "payout": payout,
+        "money": int(row[0]),
+        "co2_remaining": int(row[1])
+    })
+    
 @app.route("/api/bases", methods=["GET"])
 def bases():
     conn = get_conn()

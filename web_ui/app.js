@@ -479,7 +479,7 @@ function createMissionCard(mission, index) {
 // Renders the full mission list and auto-selects the first one
 function renderMissionList() {
   console.log("renderaus alotettu");
-  showMissionSelection();
+  // showMissionSelection();
   missionListEl.innerHTML = "";
   missions.forEach((mission, idx) => {
     console.log(mission);
@@ -759,6 +759,7 @@ function startSelectedMission() {
         appendCaption(`Payout received: ${formatMoney(result.payout)}.`);
         await loadGameState();
         await loadMissions();
+        await renderButton("Back to Missions", showMissionSelection).scrollIntoView({ behavior: "smooth" });
       })
       .catch(() => {
         flightStatusEl.textContent = "Flight complete, but backend update failed";
