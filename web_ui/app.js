@@ -145,7 +145,7 @@ function showCaptainLog(mission) {
   missionListEl.classList.add("hidden");
   captionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
-  captionListEl.innerHTML = "";
+  // captionListEl.innerHTML = "";
   refreshMapSize();
   clearButtons();
 }
@@ -181,6 +181,7 @@ function showMissionSelection() {
   captionListEl.classList.add("hidden");
   missionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
+  missionBasetglEl.classList.remove("hidden"); 
   refreshMapSize();
   clearButtons();
 }
@@ -191,6 +192,7 @@ function showBaseselection() {
   captionListEl.classList.add("hidden");
   missionListEl.classList.add("hidden");
   baseListEl.classList.remove("hidden");
+  missionBasetglEl.classList.remove("hidden");
   loadBases();
   refreshMapSize();
   clearButtons();
