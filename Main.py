@@ -1,3 +1,5 @@
+from asyncio.windows_events import NULL
+
 from flask import Flask, render_template, send_from_directory, request, jsonify
 from Eventit import GameSetup, Mission
 import random
@@ -218,6 +220,26 @@ def bases():
         })
     return jsonify({"bases": bases})
 
+@app.route("/api/randomEvent", methods=["GET"])
+def randomEvent():
+    type = request.args.get("type")
+    id = request.args.get("id")
+
+    text = "Tämä on testi eventti"
+    button = {
+        "label" : "vaihtoehto 1",
+        "id" : 1
+    }
+    button2 = {
+        "label": "vaihtoehto 2",
+        "id": 2
+    }
+    buttons = [button, button2]
+    event = {
+        "text" : text,
+        "buttons" : buttons
+    }
+    return jsonify({"event": event})
 @app.route('/app.js')
 def js():
     return send_from_directory('web_ui', 'app.js')

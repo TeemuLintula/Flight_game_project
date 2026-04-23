@@ -662,79 +662,73 @@ async function completeMissionOnBackend(mission) {
 //   2. Hold at pickup while cargo is loaded
 //   3. Fly from pickup to destination
 // After landing, calls the backend and refreshes game state.
+
 function startSelectedMission() {
-  if (!selectedMission || isFlying) {
-    return;
-  }
+  if (!selectedMission || isFlying) return;
 
   stopFlightAnimation();
   showCaptainLog(selectedMission);
   appendCaption(`Mission accepted: ${selectedMission.Name}`);
-  appendCaption(`Routing to pickup airport ${selectedMission.Location[0][0]}.`);
 
   isFlying = true;
   flightStatusEl.textContent = `In flight to mission start: ${selectedMission.Location[0][0]}`;
 
-  const durationMs = 22000;
-  const startTime = performance.now();
+  let durationMs = 22000;
+  let startTime = performance.now();
+
+  let isPaused = false;
+  let pauseStartTime = 0;
+  let totalPausedTime = 0;
 
   const legAStart = playerLocation
     ? { lat: playerLocation.lat, lon: playerLocation.lon }
     : { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
+
   const legAEnd = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
   const legBStart = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
   const legBEnd = { lat: selectedMission.Destination[0][2], lon: selectedMission.Destination[0][3] };
+
   const legAEndPct = 0.35;
   const holdEndPct = 0.58;
   const milestones = new Set();
-  const airEvents = [
-    "Weather update: mild crosswinds, autopilot stable.",
-    "Cabin check complete. Cargo restraints look good.",
-    "ATC confirms corridor is clear ahead.",
-    "Engine report: performance nominal."
-  ];
 
-  const step = (now) => {
-    const elapsed = now - startTime;
+  async function step(now) {
+    if (isPaused) {
+      animationFrameId = requestAnimationFrame(step);
+      return;
+    }
+
+    const elapsed = now - startTime - totalPausedTime;
     const progress = Math.min(elapsed / durationMs, 1);
 
     if (progress < legAEndPct) {
       setPlanePosition(legAStart, legAEnd, progress / legAEndPct);
-      flightStatusEl.textContent = `Flying to mission start: ${selectedMission.Location[0][0]}`;
-      if (!milestones.has("depart")) {
-        appendCaption(`Departed from ${playerLocation?.airport || "current position"}.`);
-        milestones.add("depart");
-      }
+
       if (progress > 0.2 && !milestones.has("event-a")) {
-        appendCaption(airEvents[Math.floor(Math.random() * airEvents.length)]);
         milestones.add("event-a");
+        //RANDOM EVENTTI TÄSSÄ
+        if (true) {
+
+          isPaused = true;
+          pauseStartTime = performance.now();
+
+          appendCaption("⚠️ Random event!");
+          await randomEvent("duringFlight");
+
+          totalPausedTime += performance.now() - pauseStartTime;
+          isPaused = false;
+        }
       }
+
     } else if (progress < holdEndPct) {
       setPlanePosition(legAEnd, legAEnd, 1);
-      const loadProgress = (progress - legAEndPct) / (holdEndPct - legAEndPct);
-      const remainingSec = Math.max(0, Math.ceil((1 - loadProgress) * 8));
-      flightStatusEl.textContent = `Loading at ${selectedMission.Location[0][0]} (${remainingSec}s)`;
 
-      if (!milestones.has("pickup")) {
-        appendCaption(`Reached pickup airport ${selectedMission.Location[0][0]}.`);
-        appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
-        milestones.add("pickup");
-      }
-      if (loadProgress > 0.5 && !milestones.has("event-load")) {
-        appendCaption("Loading complete. Final checks in progress.");
-        milestones.add("event-load");
-      }
-      if (loadProgress > 0.92 && !milestones.has("pushback")) {
-        appendCaption(`Pushback approved. Taxiing for departure to ${selectedMission.Destination[0][0]}.`);
-        milestones.add("pushback");
-      }
     } else {
-      setPlanePosition(legBStart, legBEnd, (progress - holdEndPct) / (1 - holdEndPct));
-      flightStatusEl.textContent = `Flying mission route: ${selectedMission.Location[0][0]} -> ${selectedMission.Destination[0][0]}`;
-      if (progress > 0.7 && !milestones.has("event-b")) {
-        appendCaption(airEvents[Math.floor(Math.random() * airEvents.length)]);
-        milestones.add("event-b");
-      }
+      setPlanePosition(
+        legBStart,
+        legBEnd,
+        (progress - holdEndPct) / (1 - holdEndPct)
+      );
     }
 
     flightProgressEl.style.width = `${Math.floor(progress * 100)}%`;
@@ -745,31 +739,38 @@ function startSelectedMission() {
     }
 
     stopFlightAnimation();
-    completeMissionOnBackend(selectedMission)
-      .then(async (result) => {
-        playerLocation = {
-          lat: selectedMission.Destination[0][2],
-          lon: selectedMission.Destination[0][3],
-          airport: selectedMission.Destination[0][0],
-          country: selectedMission.Destination[0][1]
-        };
-        drawPlayerLocationMarker();
-        creditsEl.textContent = String(result.money);
-        co2BudgetEl.textContent = String(result.co2_remaining);
-        flightStatusEl.textContent = `Mission complete: ${selectedMission.Name} (+${formatMoney(result.payout)})`;
-        appendCaption(`Landed at ${selectedMission.Destination[0][0]}. Mission complete.`);
-        appendCaption(`Payout received: ${formatMoney(result.payout)}.`);
-        await loadGameState();
-        await loadMissions();
-        await renderButton("Back to Missions", showMissionSelection).scrollIntoView({ behavior: "smooth" });
-      })
-      .catch(() => {
-        flightStatusEl.textContent = "Flight complete, but backend update failed";
-        appendCaption("Flight ended, but backend update failed. Retry refreshing missions.");
-      });
-  };
+    completeMissionOnBackend(selectedMission);
+  }
 
   animationFrameId = requestAnimationFrame(step);
+}
+
+async function randomEvent(type, id) {
+  if (id == 1) return;
+
+  try {
+    const data = await fetchJson(`/api/randomEvent?type=${type}&id=${id}`);
+    appendCaption(data.event.text);
+    clearButtons();
+
+    return new Promise((resolve) => {
+      for (const btn of data.event.buttons) {
+        renderButton(btn.label, async () => {
+          clearButtons();
+
+          // Continue chain OR resolve if end
+          if (btn.id) {
+            await randomEvent(type, btn.id);
+          }
+
+          resolve();
+        });
+      }
+    });
+
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 // ============================================================
