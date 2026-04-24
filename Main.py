@@ -2,7 +2,7 @@ from asyncio.windows_events import NULL
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
 from Eventit import GameSetup, Mission
-import random
+from Eventit.random_eventit import airport_eventit, duringflight_eventit, Homebase_eventit
 
 #tallentaa luodut yhteydet palvelimeen
 connections = {}
@@ -225,6 +225,14 @@ def randomEvent():
     type = request.args.get("type")
     id = request.args.get("id")
 
+    if type == "duringFlight":
+        event = duringflight_eventit.randomrandomiser(id)
+    elif type == "airport":
+        event = airport_eventit.randomrandomiser(id)
+    elif type == "homeBase":
+        event = Homebase_eventit.randomrandomiser(id)
+
+    """ TÄSSÄ ESIMERKKI EVENTISTÄ
     text = "Tämä on testi eventti"
     button = {
         "label" : "vaihtoehto 1",
@@ -239,6 +247,7 @@ def randomEvent():
         "text" : text,
         "buttons" : buttons
     }
+    """
     return jsonify({"event": event})
 @app.route('/app.js')
 def js():
