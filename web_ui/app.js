@@ -4,9 +4,11 @@
 // database session token, and selected save slot.
 // ============================================================
 let missions = [];
+let bases = [];
 let playerName = "";
 let dbSessionToken = "";
 let selectedSaveName = "";
+let isAtHomebase = false;
 
 // ============================================================
 // DOM REFERENCES – Auth & Save Selection Screens
@@ -37,6 +39,7 @@ const saveListEl = document.getElementById("saveList");
 const missionListEl = document.getElementById("missionList");
 const captionListEl = document.getElementById("captionList");
 const baseListEl = document.getElementById("baseList");
+const baseActionsEl = document.getElementById("baseActions");
 const missionBasetglEl = document.getElementById("missionBasetgl");
 const missionPanelTitleEl = document.getElementById("missionPanelTitle");
 const missionPanelSubtitleEl = document.getElementById("missionPanelSubtitle");
@@ -79,12 +82,28 @@ let planeMarker = null;   // animated plane icon during flight
 let playerMarker = null;  // player's current location marker
 let playerLocation = null;// { lat, lon, airport, country }
 let selectedMission = null;
+let selectedBase = null;
 let animationFrameId = null;
 let isFlying = false;
 
 // ============================================================
 // UTILITY HELPERS
 // ============================================================
+
+// Function that returns an array of elements whose text content includes the given text
+function getElementsByText(text) {
+    function rec(ele, arr)
+    {
+        if (ele.childNodes.length > 0) 
+            for (var i = 0; i < ele.childNodes.length; i++) 
+                rec(ele.childNodes[i], arr);
+        else if (ele.nodeType == Node.TEXT_NODE && 
+                 ele.nodeValue.indexOf(text) != -1) 
+            arr.push(ele.parentNode);
+        return arr;
+    }
+    return rec(document.body, []);
+}
 
 // Returns true when both lat and lon are real finite numbers
 function hasValidCoords(lat, lon) {
@@ -145,6 +164,7 @@ function showCaptainLog(mission) {
   missionListEl.classList.add("hidden");
   captionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
+  baseActionsEl.classList.add("hidden");
   // captionListEl.innerHTML = "";
   refreshMapSize();
   clearButtons();
@@ -157,6 +177,7 @@ function showMissionContract(mission) {
   missionListEl.classList.add("hidden");
   baseListEl.classList.add("hidden");
   missionBasetglEl.classList.add("hidden");
+  baseActionsEl.classList.add("hidden");
 
 
   const contractTXT = `
@@ -181,9 +202,14 @@ function showMissionSelection() {
   captionListEl.classList.add("hidden");
   missionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
+  baseActionsEl.classList.add("hidden");
   missionBasetglEl.classList.remove("hidden"); 
   refreshMapSize();
   clearButtons();
+
+  if (isAtHomebase == true) {
+    renderButton("Base Actions", () => showbaseActions());
+  }
 }
 
 function showBaseselection() {
@@ -193,9 +219,35 @@ function showBaseselection() {
   missionListEl.classList.add("hidden");
   baseListEl.classList.remove("hidden");
   missionBasetglEl.classList.remove("hidden");
+  baseActionsEl.classList.add("hidden");
   loadBases();
   refreshMapSize();
   clearButtons();
+}
+
+function showbaseActions(base = selectedBase) {
+  if (!base) return;
+
+  missionPanelTitleEl.textContent = `Home Base: ${base.airport}`;
+  missionPanelSubtitleEl.textContent = "Manage your base and plane";
+  baseActionsEl.classList.remove("hidden");
+  captionListEl.classList.add("hidden");
+  missionListEl.classList.add("hidden");
+  baseListEl.classList.add("hidden");
+  missionBasetglEl.classList.add("hidden");
+  baseActionsEl.innerHTML = "";
+  
+  const btn = document.createElement("button");
+  btn.className = "mission-btn";
+  btn.textContent = "Check Plants";
+  btn.addEventListener("click", () => checkPlants(base.ident));
+  baseActionsEl.appendChild(btn);
+
+  const backBtn = document.createElement("button");
+  backBtn.className = "mission-btn";
+  backBtn.textContent = "Back to Missions";
+  backBtn.addEventListener("click", showMissionSelection);
+  baseActionsEl.appendChild(backBtn);
 }
 
 function toggleBaseSelection() {
@@ -203,9 +255,14 @@ function toggleBaseSelection() {
   if (missionBasetglEl.classList.contains("active")) {
     missionBasetglEl.textContent = "Show Missions";
     showBaseselection();
-  } else {
+  } 
+  else if (missionBasetglEl.classList.contains("active") == false) {
     missionBasetglEl.textContent = "Select Bases";
     showMissionSelection();
+  }
+  else {
+    missionBasetglEl.textContent = "Back to base";
+    showbaseActions();
   }
 }
 missionBasetglEl.addEventListener("click", toggleBaseSelection);
@@ -431,6 +488,19 @@ async function loadGameState() {
   if (hasValidCoords(lat, lon)) {
     drawPlayerLocationMarker();
   }
+
+  console.log("Player location:", playerLocation);
+  console.log("Bases:", bases);
+
+  // Check if current location is a homebase
+  isAtHomebase = bases.some(base => base.airport === playerLocation.airport);
+  console.log("isAtHomebase:", isAtHomebase);
+  if (isAtHomebase) {
+    selectedBase = bases.find(base => base.airport === playerLocation.airport);
+    console.log("Selected base:", selectedBase);
+  } else {
+    selectedBase = null;
+  }
 }
 
 // ============================================================
@@ -534,10 +604,16 @@ function createBaseCard(base) {
   card.addEventListener("click", () => {
     stopFlightAnimation();
 
+    if (card.classList.contains("active") && selectedBase && selectedBase.ident === base.ident) {
+      startHomebaseFlight(base);
+      return;
+    }
+
     document.querySelectorAll(".mission-card").forEach((el) =>
       el.classList.remove("active")
     );
 
+    selectedBase = base;
     card.classList.add("active");
     clearMapObjects();
     drawPlayerLocationMarker();
@@ -579,7 +655,7 @@ async function loadBases() {
   routeLabelEl.textContent = "Loading bases from backend...";
   try {
     const data = await fetchJson(`/api/bases?player=${encodeURIComponent(playerName)}`);
-    const bases = Array.isArray(data.bases) ? data.bases : [];
+    bases = Array.isArray(data.bases) ? data.bases : [];
     console.log(bases);
     renderBaseList(bases);
   } catch (error) {
@@ -655,6 +731,118 @@ async function completeMissionOnBackend(mission) {
       mission
     })
   });
+}
+
+// Sends the completed homebase flight to the backend to update location and CO2 usage
+async function completeHomebaseOnBackend(base) {
+  const response = await fetchJson("/api/start-homebase", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      player: playerName,
+      base
+    })
+  });
+
+  if (response) {
+    creditsEl.textContent = String(response.money);
+    co2BudgetEl.textContent = String(response.co2_remaining);
+  }
+
+  return response;
+}
+
+function startHomebaseFlight(base) {
+  if (!base || isFlying) return;
+
+  stopFlightAnimation();
+  showCaptainLog({ Name: base.airport });
+  appendCaption(`Homebase flight accepted: ${base.airport}`);
+
+  isFlying = true;
+  flightStatusEl.textContent = `In flight to home base: ${base.airport}`;
+  routeLabelEl.textContent = `Flying home: ${base.airport}`;
+
+  const basePoint = { lat: base.lat, lon: base.lon };
+  const startPoint = playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)
+    ? { lat: playerLocation.lat, lon: playerLocation.lon }
+    : basePoint;
+
+  const totalDurationMs = 14000;
+  const startTime = performance.now();
+
+  clearMapObjects();
+  drawPlayerLocationMarker();
+
+  activeRoute = L.polyline([
+    [startPoint.lat, startPoint.lon],
+    [basePoint.lat, basePoint.lon]
+  ], {
+    color: "#1f6687",
+    weight: 4,
+    dashArray: "8 6"
+  }).addTo(map);
+
+  const bounds = L.featureGroup([activeRoute]).getBounds();
+  map.fitBounds(bounds, { padding: [40, 40] });
+
+  async function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / totalDurationMs, 1);
+
+    setPlanePosition(startPoint, basePoint, progress);
+    flightProgressEl.style.width = `${Math.floor(progress * 100)}%`;
+
+    if (progress < 1) {
+      animationFrameId = requestAnimationFrame(step);
+      return;
+    }
+
+    stopFlightAnimation();
+    appendCaption(`Landed at home base: ${base.airport}`);
+    await completeHomebaseOnBackend(base);
+    await loadGameState();
+    isFlying = false;
+    flightStatusEl.textContent = `Arrived at home base: ${base.airport}`;
+    showbaseActions();
+  }
+
+  animationFrameId = requestAnimationFrame(step);
+}
+
+//=============================================================
+// Base action functions
+//=============================================================
+
+async function checkPlants(baseIdent) {
+  try {
+    const data = await fetchJson(`/api/check-plants?base=${baseIdent}&player=${encodeURIComponent(playerName)}`);
+    const plantStatusEL = document.createElement("p");
+    plantStatusEL.textContent = `Plant status: ${data.plants}`;
+    baseActionsEl.appendChild(plantStatusEL);
+  } catch (error) {
+    console.error("Error checking plants:", error);
+    const errorEl = document.createElement("p");
+    errorEl.textContent = "Failed to check plants.";
+    baseActionsEl.appendChild(errorEl);
+  }
+}
+
+async function upgradePlane() {
+  try {
+    const data = await fetchJson("/api/upgrade-plane", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player: playerName })
+    });
+    appendCaption(`Plane upgraded: ${data.message}`);
+    showCaptainLog({ Name: "Base Management" });
+  } catch (error) {
+    console.error("Error upgrading plane:", error);
+    appendCaption("Failed to upgrade plane.");
+  }
 }
 
 // Main flight sequence: animates the plane through three legs:
@@ -740,6 +928,7 @@ function startSelectedMission() {
 
     stopFlightAnimation();
     completeMissionOnBackend(selectedMission);
+    await loadGameState();
   }
 
   animationFrameId = requestAnimationFrame(step);
@@ -787,6 +976,7 @@ async function enterGameWithSelectedSave() {
   playerName = selectedSaveName;
   playerNameEl.textContent = playerName;
 
+  await loadBases();
   await loadGameState();
   await loadMissions();
   flightStatusEl.textContent = "Connected to backend";
