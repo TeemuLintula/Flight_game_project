@@ -1,150 +1,133 @@
 import random
-import sys
-import time
 
+class tapahtuma:
+    instances = []
+    def __init__(self, id, text="", buttons=None):
+        self.id = id
+        self.text = text
+        self.buttons = buttons
+        tapahtuma.instances.append(self)
 
-def hidastulostus(teksti, nopeus=0.03):
-    for c in teksti + "\n":
-        sys.stdout.write(c)
-        sys.stdout.flush()
-        time.sleep(nopeus)
+# ------------------- SKINWALKER EVENT -------------------
 
-def skinwalker():
-    hidastulostus('"Someone starts to knock your door"\n')
-    hidastulostus('You start walking towards the door.\n'
-                  'You check through the peephole. You see a pale long man. Over 2 meters tall standing in front of the door.\n'
-                  "You check the time. It's 03:13.\n"
-                  'Pale man says:\n'
-                  '"Can you open the door, I´m starving and it´s very cold over here."\n'
-                  '"What will you do"')
+skinwalker = tapahtuma(2)
+skinwalker.text = (
+    "Someone starts to knock your door.\n"
+    "You check through the peephole and see a pale tall man.\n"
+    "He says: 'Can you open the door, I’m starving.'\n"
+    "What will you do?"
+)
+skinwalker.buttons = [
+    {"label": "Let him in", "id": 3},
+    {"label": "Question him", "id": 4},
+    {"label": "Stay silent", "id": 5}
+]
 
-    while True:
-        skinari = input("(1) Let him in\n"
-                        "(2) Question him\n"
-                        "(3) Don't say anything\n"
-                        "(Choose 1-3): ")
+skinwalker_let_in = tapahtuma(3)
+skinwalker_let_in.text = "He thanks you... then attacks you instantly."
+skinwalker_let_in.buttons = [{"label": "Continue", "id": 1}]
 
-        if skinari == "1":
-            hidastulostus("Pale man thanks you.\n"
-                          "Everything seems fine, but just after the man enters he attacks you and you didn't have time to react...")
-            return
+skinwalker_question = tapahtuma(4)
+skinwalker_question.text = "You question him. His answers seem suspicious. What now?"
+skinwalker_question.buttons = [
+    {"label": "Don't let him in", "id": 6},
+    {"label": "Let him in anyway", "id": 3}
+]
 
-        elif skinari == "2":
-            hidastulostus("You ask the pale man:\n"
-                          "Why are you all the way here at this time??\n"
-                          "Pale man says:\n"
-                          '"I´m starving and it´s very cold over here"\n'
-                          'You say:\n'
-                          '"Yeah yeah, you just said the same thing!"\n'
-                          'After you get suspicious of the man, you: ')
+skinwalker_safe = tapahtuma(6)
+skinwalker_safe.text = "He stares through the peephole... then leaves. You survive."
+skinwalker_safe.buttons = [{"label": "Continue", "id": 1}]
 
-            while True:
-                skinari2 = input("(1) Say you can't let him in\n"
-                                 "(2) Say he can enter\n"
-                                 "(Choose 1 or 2): ")
+skinwalker_silent = tapahtuma(5)
+skinwalker_silent.text = "He waits... then leaves. You go back to sleep."
+skinwalker_silent.buttons = [{"label": "Continue", "id": 1}]
 
-                if skinari2 == "1":
-                    hidastulostus("Pale man comes veeery close to the peephole. You start to get shivers because it seems like the man sees through the peephole.\n"
-                                  "You hold your breath for a while... after 20 seconds the man walks away. You sigh for relief and go back to sleep")
-                    return
+# ------------------- NAAPURI EVENT -------------------
 
-                elif skinari2 == "2":
-                    hidastulostus("Pale man thanks you.\n"
-                                  "Everything seems fine, but just after the man enters he attacks you and you didn't have time to react...")
-                    return
+naapuri = tapahtuma(7)
+naapuri.text = "Your neighbour Greg is knocking on your door. Will you open?"
+naapuri.buttons = [
+    {"label": "Yes", "id": 8},
+    {"label": "No", "id": 9}
+]
 
-                else:
-                    print("Please enter 1-2")
+naapuri_yes = tapahtuma(8)
+naapuri_yes.text = "Greg complains about weird smells. Will you stop?"
+naapuri_yes.buttons = [
+    {"label": "Yes", "id": 10},
+    {"label": "No", "id": 11}
+]
 
-        elif skinari == "3":
-            hidastulostus("Pale man comes veeery close to the peephole. You start to get shivers because it seems like the man sees through the peephole.\n"
-                          "You hold your breath for a while... after 20 seconds the man walks away. You sigh for relief and go back to sleep.")
-            return
+naapuri_good = tapahtuma(10)
+naapuri_good.text = "Greg thanks you. (+1000 social credit)"
+naapuri_good.buttons = [{"label": "Continue", "id": 1}]
 
-        else:
-            print("Please enter 1-3")
+naapuri_bad = tapahtuma(11)
+naapuri_bad.text = "Greg gets angry and leaves..."
+naapuri_bad.buttons = [{"label": "Continue", "id": 1}]
 
+naapuri_no = tapahtuma(9)
+naapuri_no.text = "Greg knocks a few times and leaves."
+naapuri_no.buttons = [{"label": "Continue", "id": 1}]
 
+# ------------------- JEHOVAT EVENT -------------------
 
+jehovat = tapahtuma(12)
+jehovat.text = "You see Jehovah’s Witnesses at your door."
+jehovat.buttons = [
+    {"label": "Open the door", "id": 13},
+    {"label": "Ignore them", "id": 14}
+]
 
-def naapuri():
-    hidastulostus("Your neighbour Greg is knocking on your hangar door. ")
+jehovat_open = tapahtuma(13)
+jehovat_open.text = "They ask if you want to talk about religion."
+jehovat_open.buttons = [
+    {"label": "No", "id": 15},
+    {"label": "Yes", "id": 16}
+]
 
-    while True:
-        naapuri = input("Will you open the door? (yes/no): ")
-        if naapuri.upper() == "YES":
-            hidastulostus("Greg: Oh hello there!\n"
-                 "I was just thinking, why it's smelling so weird in here?\n"
-                 "Could you stop whatever produces these smells?")
-            vastaus1 = input("Will you stop producing spices for Greg? (yes/no): ")
-            if vastaus1.upper() == "YES":
-                hidastulostus("Greg: Thank you so much for limiting your output of smells!\n(+1000 social credit)")
-                break
-            elif vastaus1.upper() == "NO":
-                hidastulostus("Greg: Oh... this won't be the last time your hearing from me... ")
-                break
-        elif naapuri.upper() == "NO":
-            hidastulostus('"Greg" is punching door 3 more times. After that he leaves.')
-            break
-        else:
-            hidastulostus("Please enter yes or no")
+jehovat_no = tapahtuma(15)
+jehovat_no.text = "They continue preaching anyway. Do you join them?"
+jehovat_no.buttons = [
+    {"label": "No", "id": 17},
+    {"label": "Yes", "id": 18}
+]
 
+jehovat_yes = tapahtuma(16)
+jehovat_yes.text = "You listen carefully. Do you join them?"
+jehovat_yes.buttons = [
+    {"label": "No", "id": 17},
+    {"label": "Yes", "id": 18}
+]
 
-def kysy_valinta(kysymys):
-    while True:
-        valinta = input(kysymys)
-        if valinta in ["1", "2"]:
-            return valinta
-        else:
-            hidastulostus("Virheellinen valinta. Syötä 1 tai 2.")
+jehovat_decline = tapahtuma(17)
+jehovat_decline.text = "You decide not to join."
+jehovat_decline.buttons = [{"label": "Continue", "id": 1}]
 
+jehovat_join = tapahtuma(18)
+jehovat_join.text = "You join them and receive a magazine."
+jehovat_join.buttons = [{"label": "Continue", "id": 1}]
 
-def liittymis_kysymys():
-    liittyy = kysy_valinta("(1) En halua liittyä (2) Haluan liittyä: ")
-    if liittyy == "1":
-        hidastulostus("Ei sitten.")
-    elif liittyy == "2":
-        hidastulostus("Oikea valinta. Tässä vielä Vartiotorni-lehti, josta voit lukea meistä lisää.")
+jehovat_ignore = tapahtuma(14)
+jehovat_ignore.text = "You don't open the door. They leave."
+jehovat_ignore.buttons = [{"label": "Continue", "id": 1}]
 
+# ------------------- RANDOM EVENT SYSTEM -------------------
 
-def jehovat():
-    hidastulostus("Oveesi koputetaan ja näet ovisilmästä heidän olevan jehovantodistajia.")
+def randomrandomiser(id):
+    tapahtumat = [2, 7, 12]
+    event = {}
+    newid = int(id)
 
-    valinta = kysy_valinta("(1) Avaa ovi (2) Älä avaa ovea: ")
+    if newid == 0:
+        newid = random.choice(tapahtumat)
 
-    if valinta == "1":
-        hidastulostus("Olisiko teillä hetki aikaa puhua Jeesuksesta?")
+    for i in tapahtuma.instances:
+        if i.id == newid:
+            event = {
+                "text": i.text,
+                "buttons": i.buttons
+            }
 
-        vastaus = kysy_valinta("(1) Ei (2) Kyllä: ")
-
-        if vastaus == "1":
-            hidastulostus("Ei kiinnosta. Kerron silti.")
-            hidastulostus("Hyvä uutinen Jumalan valtakunnasta on tullut tietoomme, että sinäkin voit pelastua.")
-            hidastulostus("Loppu on tulossa ja sinunkin on mahdollista pelastautua.")
-            hidastulostus("Saatana tulee nousemaan maan päälle tuhoamaan kaikki. Jos liityt meihin sinullakin on mahdollisuus pelastua")
-
-            liittymis_kysymys()
-
-        elif vastaus == "2":
-            hidastulostus("Hienoa!")
-            hidastulostus("Hyvä uutinen Jumalan valtakunnasta on tullut tietoomme, että sinäkin voit pelastua.")
-            hidastulostus("Loppu on tulossa ja sinunkin on mahdollista pelastautua.")
-            hidastulostus("Saatana tulee nousemaan maan päälle tuhoamaan kaikki. Jos liityt meihin sinullakin on mahdollisuus pelastua.")
-
-            liittymis_kysymys()
-
-    elif valinta == "2":
-        hidastulostus("Et avaa ovea ja koputus loppuu hetken kuluttua.")
-
-tapahtumat = [jehovat, naapuri, skinwalker]
-
-
-
-def randomrandomiser():
-    tapahtuma = random.choice(tapahtumat)
-    tapahtuma()
-
-def randomevent_h():
-    luku = random.randint(1,4)
-    if luku == 1:
-        randomrandomiser()
+    print(event)
+    return event
