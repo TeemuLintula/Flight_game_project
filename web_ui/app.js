@@ -3,12 +3,91 @@
 // Tracks current game session: loaded missions, active player,
 // database session token, and selected save slot.
 // ============================================================
-let missions = [];
-let bases = [];
-let playerName = "";
 let dbSessionToken = "";
 let selectedSaveName = "";
-let isAtHomebase = false;
+let player = null;  // Instance of Player class
+
+// ============================================================
+// PLAYER CLASS
+// Encapsulates all player-related data and logic
+// ============================================================
+class Player {
+  constructor(name) {
+    this.name = name;
+    this.location = null;
+    this.bases = [];
+    this.missions = [];
+    this.money = 0;
+    this.co2_remaining = 0;
+    this.selectedBase = null;
+    this.selectedMission = null;
+  }
+
+  async loadGameState() {
+    const data = await fetchJson(`/api/game-state?player=${encodeURIComponent(this.name)}`);
+    this.money = data.money;
+    this.co2_remaining = data.co2_remaining;
+    this.location = {
+      lat: Number(data.location_lat),
+      lon: Number(data.location_lon),
+      airport: data.location_airport,
+      country: data.location_country,
+      ident: data.location_ident
+    };
+    creditsEl.textContent = String(this.money);
+    co2BudgetEl.textContent = String(this.co2_remaining);
+    if (hasValidCoords(this.location.lat, this.location.lon)) {
+      drawPlayerLocationMarker();
+    }
+    console.log("Player location:", this.location);
+    console.log("Bases:", this.bases);
+    console.log("isAtHomebase:", this.isAtHomebase());
+    if (this.isAtHomebase()) {
+      this.updateSelectedBase();
+      console.log("Selected base:", this.selectedBase);
+    }
+  }
+
+  async loadBases() {
+    const data = await fetchJson(`/api/bases?player=${encodeURIComponent(this.name)}`);
+    this.bases = Array.isArray(data.bases) ? data.bases : [];
+    console.log(this.bases);
+  }
+
+  async loadMissions() {
+    routeLabelEl.textContent = "Loading missions from backend...";
+    try {
+      const data = await fetchJson(`/api/callMissions?player=${encodeURIComponent(this.name)}&count=5`);
+      this.missions = Array.isArray(data.missions) ? data.missions : [];
+      console.log(this.missions);
+      if (this.missions.length === 0) {
+        missionListEl.innerHTML = "<p class='mission-meta'>No missions available right now.</p>";
+        routeLabelEl.textContent = "No route available";
+        flightStatusEl.textContent = "Idle";
+      }
+    } catch (error) {
+      console.log(error.message);
+      missionListEl.innerHTML = "<p class='mission-meta'>Could not load missions. Try refresh.</p>";
+      routeLabelEl.textContent = "Mission load failed";
+      flightStatusEl.textContent = "Mission service unavailable";
+    }
+  }
+
+  isAtHomebase() {
+    if (!this.location || this.bases.length === 0) return false;
+    return this.bases.some(base => base.ident === this.location.ident);
+  }
+
+  getSelectedBase() {
+    if (!this.location) return null;
+    return this.bases.find(base => base.ident === this.location.ident) || null;
+  }
+
+  updateSelectedBase() {
+    this.selectedBase = this.getSelectedBase();
+    return this.selectedBase;
+  }
+}
 
 // ============================================================
 // DOM REFERENCES – Auth & Save Selection Screens
@@ -80,9 +159,6 @@ let fromMarker = null;    // marker at mission origin airport
 let toMarker = null;      // marker at mission destination airport
 let planeMarker = null;   // animated plane icon during flight
 let playerMarker = null;  // player's current location marker
-let playerLocation = null;// { lat, lon, airport, country }
-let selectedMission = null;
-let selectedBase = null;
 let animationFrameId = null;
 let isFlying = false;
 
@@ -207,7 +283,7 @@ function showMissionSelection() {
   refreshMapSize();
   clearButtons();
 
-  if (isAtHomebase == true) {
+  if (player && player.isAtHomebase()) {
     renderButton("Base Actions", () => showbaseActions());
   }
 }
@@ -225,10 +301,11 @@ function showBaseselection() {
   clearButtons();
 }
 
-function showbaseActions(base = selectedBase) {
-  if (!base) return;
+function showbaseActions(base = null) {
+  const selectedBase = base || player.selectedBase;
+  if (!selectedBase) return;
 
-  missionPanelTitleEl.textContent = `Home Base: ${base.airport}`;
+  missionPanelTitleEl.textContent = `Home Base: ${selectedBase.airport}`;
   missionPanelSubtitleEl.textContent = "Manage your base and plane";
   baseActionsEl.classList.remove("hidden");
   captionListEl.classList.add("hidden");
@@ -240,7 +317,7 @@ function showbaseActions(base = selectedBase) {
   const btn = document.createElement("button");
   btn.className = "mission-btn";
   btn.textContent = "Check Plants";
-  btn.addEventListener("click", () => checkPlants(base.ident));
+  btn.addEventListener("click", () => checkPlants(selectedBase.ident));
   baseActionsEl.appendChild(btn);
 
   const backBtn = document.createElement("button");
@@ -289,11 +366,11 @@ function clearMapObjects() {
 
 // Places (or updates) the player's current-position marker on the map
 function drawPlayerLocationMarker() {
-  if (!playerLocation || !hasValidCoords(playerLocation.lat, playerLocation.lon)) {
+  if (!player || !player.location || !hasValidCoords(player.location.lat, player.location.lon)) {
     return;
   }
 
-  const point = [playerLocation.lat, playerLocation.lon];
+  const point = [player.location.lat, player.location.lon];
   if (!playerMarker) {
     playerMarker = L.marker(point, {
       icon: L.divIcon({
@@ -306,18 +383,18 @@ function drawPlayerLocationMarker() {
   } else {
     playerMarker.setLatLng(point);
   }
-  playerMarker.bindPopup(`You are here: ${playerLocation.airport}, ${playerLocation.country}`);
+  playerMarker.bindPopup(`You are here: ${player.location.airport}, ${player.location.country}`);
 }
 
 // Draws the full route for a mission: player -> pickup -> destination
 function drawMission(mission) {
-  selectedMission = mission;
+  player.selectedMission = mission;
   clearMapObjects();
 
   drawPlayerLocationMarker();
 
-  const origin = playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)
-    ? [playerLocation.lat, playerLocation.lon]
+  const origin = player.location && hasValidCoords(player.location.lat, player.location.lon)
+    ? [player.location.lat, player.location.lon]
     : [mission.Location[0][2], mission.Location[0][3]];
 
   const from = [mission.Location[0][2], mission.Location[0][3]];
@@ -472,35 +549,7 @@ async function loadSaves() {
 // from the backend and updates the HUD.
 // ============================================================
 async function loadGameState() {
-  const data = await fetchJson(`/api/game-state?player=${encodeURIComponent(playerName)}`);
-  creditsEl.textContent = String(data.money);
-  co2BudgetEl.textContent = String(data.co2_remaining);
-
-  const lat = Number(data.location_lat);
-  const lon = Number(data.location_lon);
-  playerLocation = {
-    lat,
-    lon,
-    airport: data.location_airport,
-    country: data.location_country
-  };
-
-  if (hasValidCoords(lat, lon)) {
-    drawPlayerLocationMarker();
-  }
-
-  console.log("Player location:", playerLocation);
-  console.log("Bases:", bases);
-
-  // Check if current location is a homebase
-  isAtHomebase = bases.some(base => base.airport === playerLocation.airport);
-  console.log("isAtHomebase:", isAtHomebase);
-  if (isAtHomebase) {
-    selectedBase = bases.find(base => base.airport === playerLocation.airport);
-    console.log("Selected base:", selectedBase);
-  } else {
-    selectedBase = null;
-  }
+  await player.loadGameState();
 }
 
 // ============================================================
@@ -551,41 +600,23 @@ function createMissionCard(mission, index) {
 // Renders the full mission list and auto-selects the first one
 function renderMissionList() {
   console.log("renderaus alotettu");
-  // showMissionSelection();
   missionListEl.innerHTML = "";
-  missions.forEach((mission, idx) => {
+  player.missions.forEach((mission, idx) => {
     console.log(mission);
     missionListEl.appendChild(createMissionCard(mission, idx));
   });
 
   const firstCard = missionListEl.querySelector(".mission-card");
-  if (firstCard && missions.length > 0) {
+  if (firstCard && player.missions.length > 0) {
     firstCard.classList.add("active");
-    drawMission(missions[0]);
+    drawMission(player.missions[0]);
   }
 }
 
 // Fetches missions from backend for the current player
 async function loadMissions() {
-  routeLabelEl.textContent = "Loading missions from backend...";
-  try {
-    const data = await fetchJson(`/api/callMissions?player=${encodeURIComponent(playerName)}&count=5`);
-    missions = Array.isArray(data.missions) ? data.missions : [];
-    console.log(missions);
-    if (missions.length === 0) {
-      missionListEl.innerHTML = "<p class='mission-meta'>No missions available right now.</p>";
-      routeLabelEl.textContent = "No route available";
-      flightStatusEl.textContent = "Idle";
-      return;
-    }
-
-    renderMissionList();
-  } catch (error) {
-    console.log(error.message);
-    missionListEl.innerHTML = "<p class='mission-meta'>Could not load missions. Try refresh.</p>";
-    routeLabelEl.textContent = "Mission load failed";
-    flightStatusEl.textContent = "Mission service unavailable";
-  }
+  await player.loadMissions();
+  renderMissionList();
 }
 
 // ============================================================
@@ -604,7 +635,7 @@ function createBaseCard(base) {
   card.addEventListener("click", () => {
     stopFlightAnimation();
 
-    if (card.classList.contains("active") && selectedBase && selectedBase.ident === base.ident) {
+    if (card.classList.contains("active") && player.selectedBase && player.selectedBase.ident === base.ident) {
       startHomebaseFlight(base);
       return;
     }
@@ -613,7 +644,7 @@ function createBaseCard(base) {
       el.classList.remove("active")
     );
 
-    selectedBase = base;
+    player.selectedBase = base;
     card.classList.add("active");
     clearMapObjects();
     drawPlayerLocationMarker();
@@ -625,9 +656,9 @@ function createBaseCard(base) {
       icon: L.divIcon({ className: "marker-icon", html: '<div class="start-marker"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
     }).addTo(map).bindPopup(`${base.airport} (${base.country})`).openPopup();
 
-    if (playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)) {
+    if (player.location && hasValidCoords(player.location.lat, player.location.lon)) {
       preRoute = L.polyline(
-        [[playerLocation.lat, playerLocation.lon], [baseLat, baseLon]],
+        [[player.location.lat, player.location.lon], [baseLat, baseLon]],
         { color: "#1f6687", weight: 3, dashArray: "6 8" }
       ).addTo(map);
       map.fitBounds(preRoute.getBounds(), { padding: [40, 40] });
@@ -641,10 +672,10 @@ function createBaseCard(base) {
 }
 
 // Renders the list of available bases in the base selection screen
-function renderBaseList(bases) {
+function renderBaseList() {
   console.log("basejen renderöinti aloitettu");
   baseListEl.innerHTML = "";
-  bases.forEach((base) => {
+  player.bases.forEach((base) => {
     console.log(base);
     baseListEl.appendChild(createBaseCard(base));
   });
@@ -654,10 +685,8 @@ function renderBaseList(bases) {
 async function loadBases() {
   routeLabelEl.textContent = "Loading bases from backend...";
   try {
-    const data = await fetchJson(`/api/bases?player=${encodeURIComponent(playerName)}`);
-    bases = Array.isArray(data.bases) ? data.bases : [];
-    console.log(bases);
-    renderBaseList(bases);
+    await player.loadBases();
+    renderBaseList();
   } catch (error) {
     console.log(error.message);
     baseListEl.innerHTML = "<p class='mission-meta'>Could not load bases. Try refresh.</p>";
@@ -727,7 +756,7 @@ async function completeMissionOnBackend(mission) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      player: playerName,
+      player: player.name,
       mission
     })
   });
@@ -741,7 +770,7 @@ async function completeHomebaseOnBackend(base) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      player: playerName,
+      player: player.name,
       base
     })
   });
@@ -766,8 +795,8 @@ function startHomebaseFlight(base) {
   routeLabelEl.textContent = `Flying home: ${base.airport}`;
 
   const basePoint = { lat: base.lat, lon: base.lon };
-  const startPoint = playerLocation && hasValidCoords(playerLocation.lat, playerLocation.lon)
-    ? { lat: playerLocation.lat, lon: playerLocation.lon }
+  const startPoint = player.location && hasValidCoords(player.location.lat, player.location.lon)
+    ? { lat: player.location.lat, lon: player.location.lon }
     : basePoint;
 
   const totalDurationMs = 14000;
@@ -818,7 +847,7 @@ function startHomebaseFlight(base) {
 
 async function checkPlants(baseIdent) {
   try {
-    const data = await fetchJson(`/api/check-plants?base=${baseIdent}&player=${encodeURIComponent(playerName)}`);
+    const data = await fetchJson(`/api/check-plants?base=${baseIdent}&player=${encodeURIComponent(player.name)}`);
     const plantStatusEL = document.createElement("p");
     plantStatusEL.textContent = `Plant status: ${data.plants}`;
     baseActionsEl.appendChild(plantStatusEL);
@@ -835,7 +864,7 @@ async function upgradePlane() {
     const data = await fetchJson("/api/upgrade-plane", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player: playerName })
+      body: JSON.stringify({ player: player.name })
     });
     appendCaption(`Plane upgraded: ${data.message}`);
     showCaptainLog({ Name: "Base Management" });
@@ -852,8 +881,9 @@ async function upgradePlane() {
 // After landing, calls the backend and refreshes game state.
 
 function startSelectedMission() {
-  if (!selectedMission || isFlying) return;
+  if (!player.selectedMission || isFlying) return;
 
+  const selectedMission = player.selectedMission;
   stopFlightAnimation();
   showCaptainLog(selectedMission);
   appendCaption(`Mission accepted: ${selectedMission.Name}`);
@@ -868,8 +898,8 @@ function startSelectedMission() {
   let pauseStartTime = 0;
   let totalPausedTime = 0;
 
-  const legAStart = playerLocation
-    ? { lat: playerLocation.lat, lon: playerLocation.lon }
+  const legAStart = player.location
+    ? { lat: player.location.lat, lon: player.location.lon }
     : { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
 
   const legAEnd = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
@@ -973,8 +1003,8 @@ async function enterGameWithSelectedSave() {
     return;
   }
 
-  playerName = selectedSaveName;
-  playerNameEl.textContent = playerName;
+  player = new Player(selectedSaveName);
+  playerNameEl.textContent = player.name;
 
   await loadBases();
   await loadGameState();
@@ -991,11 +1021,11 @@ async function enterGameWithSelectedSave() {
 // Returns from the game view back to the save selection screen
 async function goBackToSaves() {
   stopFlightAnimation();
+  player = null;
   gameAppEl.classList.add("app-hidden");
   authOverlayEl.classList.add("hidden");
   document.body.classList.remove("game-mode");
   saveOverlayEl.classList.remove("hidden");
-  selectedMission = null;
   await loadSaves();
 }
 
