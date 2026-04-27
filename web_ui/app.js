@@ -1126,12 +1126,12 @@ function startSelectedMission() {
   let totalPausedTime = 0;
 
   const legAStart = player.location
-    ? { lat: player.location.lat, lon: player.location.lon }
-    : { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
+      ? {lat: player.location.lat, lon: player.location.lon}
+      : {lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3]};
 
-  const legAEnd = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
-  const legBStart = { lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3] };
-  const legBEnd = { lat: selectedMission.Destination[0][2], lon: selectedMission.Destination[0][3] };
+  const legAEnd = {lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3]};
+  const legBStart = {lat: selectedMission.Location[0][2], lon: selectedMission.Location[0][3]};
+  const legBEnd = {lat: selectedMission.Destination[0][2], lon: selectedMission.Destination[0][3]};
 
   const legAEndPct = 0.35;
   const holdEndPct = 0.58;
@@ -1164,59 +1164,85 @@ function startSelectedMission() {
         }
       }
 
+      if (progress > 0.98 && !milestones.has("arrived-pickup")) {
+        appendCaption(`Arrived at ${selectedMission.Location[0][0]}`);
+        flightStatusEl.textContent = `Arrived at ${selectedMission.Location[0][0]}`;
+        milestones.add("arrived-pickup");
+      }
+
     } else if (progress < holdEndPct) {
       setPlanePosition(legAEnd, legAEnd, 1);
+      if (progress > 0.2 && !milestones.has("at-gate")) {
+        appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
+        milestones.add("at-gate");
+        //RANDOM EVENTTI TÄSSÄ
+        if (true) {
 
-    } else {
-      setPlanePosition(
-        legBStart,
-        legBEnd,
-        (progress - holdEndPct) / (1 - holdEndPct)
-      );
-    }
+          isPaused = true;
+          pauseStartTime = performance.now();
 
-    flightProgressEl.style.width = `${Math.floor(progress * 100)}%`;
+          await randomEvent("airport", 0);
 
-    if (progress < 1) {
-      animationFrameId = requestAnimationFrame(step);
-      return;
-    }
-
-    stopFlightAnimation();
-    completeMissionOnBackend(selectedMission);
-    await loadGameState();
-  }
-
-  animationFrameId = requestAnimationFrame(step);
-}
-
-async function randomEvent(type, id) {
-  if (id == 1) return;
-
-  try {
-    const data = await fetchJson(`/api/randomEvent?type=${type}&id=${id}`);
-    appendCaption(data.event.text);
-    clearButtons();
-
-    return new Promise((resolve) => {
-      for (const btn of data.event.buttons) {
-        renderButton(btn.label, async () => {
-          clearButtons();
-
-          // Continue chain OR resolve if end
-          if (btn.id) {
-            await randomEvent(type, btn.id);
-          }
-
-          resolve();
-        });
+          totalPausedTime += performance.now() - pauseStartTime;
+          isPaused = false;
+        }
       }
-    });
 
-  } catch (error) {
-    console.log(error.message);
+      if (progress > 0.98 && !milestones.has("cargo-loaded")) {
+        appendCaption(`${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"} loaded in`);
+        appendCaption(`Departed to ${selectedMission.Destination[0][0]} ${selectedMission.Destination[0][1]}`)
+        milestones.add("cargo-loaded");
+
+      } else {
+        setPlanePosition(
+            legBStart,
+            legBEnd,
+            (progress - holdEndPct) / (1 - holdEndPct)
+        );
+      }
+
+      flightProgressEl.style.width = `${Math.floor(progress * 100)}%`;
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step);
+        return;
+      }
+
+      stopFlightAnimation();
+      completeMissionOnBackend(selectedMission);
+      await loadGameState();
+    }
+
+    animationFrameId = requestAnimationFrame(step);
   }
-}
+
+  async function randomEvent(type, id) {
+    if (id == 1) return;
+
+    try {
+      const data = await fetchJson(`/api/randomEvent?type=${type}&id=${id}`);
+      appendCaption(data.event.text);
+      clearButtons();
+
+      return new Promise((resolve) => {
+        for (const btn of data.event.buttons) {
+          renderButton(btn.label, async () => {
+            clearButtons();
+
+            // Continue chain OR resolve if end
+            if (btn.id) {
+              await randomEvent(type, btn.id);
+            }
+
+            resolve();
+          });
+        }
+      });
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
 // ============================================================
 // SCREEN NAVIGATION
@@ -1224,36 +1250,36 @@ async function randomEvent(type, id) {
 // ============================================================
 
 // Loads the selected save and transitions to the main game view
-async function enterGameWithSelectedSave() {
-  if (!selectedSaveName) {
-    return;
+  async function enterGameWithSelectedSave() {
+    if (!selectedSaveName) {
+      return;
+    }
+
+    player = new Player(selectedSaveName);
+    playerNameEl.textContent = player.name;
+
+    await loadBases();
+    await loadGameState();
+    await loadMissions();
+    flightStatusEl.textContent = "Connected to backend";
+
+    saveOverlayEl.classList.add("hidden");
+    authOverlayEl.classList.add("hidden");
+    document.body.classList.add("game-mode");
+    gameAppEl.classList.remove("app-hidden");
+    refreshMapSize();
   }
 
-  player = new Player(selectedSaveName);
-  playerNameEl.textContent = player.name;
-
-  await loadBases();
-  await loadGameState();
-  await loadMissions();
-  flightStatusEl.textContent = "Connected to backend";
-
-  saveOverlayEl.classList.add("hidden");
-  authOverlayEl.classList.add("hidden");
-  document.body.classList.add("game-mode");
-  gameAppEl.classList.remove("app-hidden");
-  refreshMapSize();
-}
-
 // Returns from the game view back to the save selection screen
-async function goBackToSaves() {
-  stopFlightAnimation();
-  player = null;
-  gameAppEl.classList.add("app-hidden");
-  authOverlayEl.classList.add("hidden");
-  document.body.classList.remove("game-mode");
-  saveOverlayEl.classList.remove("hidden");
-  await loadSaves();
-}
+  async function goBackToSaves() {
+    stopFlightAnimation();
+    player = null;
+    gameAppEl.classList.add("app-hidden");
+    authOverlayEl.classList.add("hidden");
+    document.body.classList.remove("game-mode");
+    saveOverlayEl.classList.remove("hidden");
+    await loadSaves();
+  }
 
 // ============================================================
 // EVENT LISTENERS
@@ -1261,84 +1287,84 @@ async function goBackToSaves() {
 // ============================================================
 
 // DB login form – authenticates against MariaDB via the backend
-dbLoginFormEl.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  dbAuthStatusEl.textContent = "Connecting to MariaDB...";
+  dbLoginFormEl.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    dbAuthStatusEl.textContent = "Connecting to MariaDB...";
 
-  try {
-    const data = await fetchJson("/api/db-login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        host: dbHostEl.value.trim(),
-        port: Number.parseInt(dbPortEl.value, 10),
-        user: dbUserEl.value.trim(),
-        password: dbPasswordEl.value,
-        database: dbNameEl.value.trim()
-      })
+    try {
+      const data = await fetchJson("/api/db-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          host: dbHostEl.value.trim(),
+          port: Number.parseInt(dbPortEl.value, 10),
+          user: dbUserEl.value.trim(),
+          password: dbPasswordEl.value,
+          database: dbNameEl.value.trim()
+        })
+      });
+
+      dbSessionToken = data.session;
+      localStorage.setItem("flightgame-db-session", dbSessionToken);
+
+      authOverlayEl.classList.add("hidden");
+      saveOverlayEl.classList.remove("hidden");
+      await loadSaves();
+    } catch (error) {
+      dbAuthStatusEl.textContent = "Login failed. Check MariaDB credentials.";
+    }
+  });
+
+  refreshSavesBtnEl.addEventListener("click", async () => {
+    try {
+      await loadSaves();
+    } catch (_error) {
+      saveStatusEl.textContent = "Could not load saves";
+    }
+  });
+
+  createSaveBtnEl.addEventListener("click", () => {
+    createSave().catch((error) => {
+      saveStatusEl.textContent = "Could not create save";
     });
-
-    dbSessionToken = data.session;
-    localStorage.setItem("flightgame-db-session", dbSessionToken);
-
-    authOverlayEl.classList.add("hidden");
-    saveOverlayEl.classList.remove("hidden");
-    await loadSaves();
-  } catch (error) {
-    dbAuthStatusEl.textContent = "Login failed. Check MariaDB credentials.";
-  }
-});
-
-refreshSavesBtnEl.addEventListener("click", async () => {
-  try {
-    await loadSaves();
-  } catch (_error) {
-    saveStatusEl.textContent = "Could not load saves";
-  }
-});
-
-createSaveBtnEl.addEventListener("click", () => {
-  createSave().catch((error) => {
-    saveStatusEl.textContent = "Could not create save";
   });
-});
 
-deleteSaveBtnEl.addEventListener("click", () => {
-  deleteSelectedSave().catch((error) => {
-    saveStatusEl.textContent = "Could not delete save";
+  deleteSaveBtnEl.addEventListener("click", () => {
+    deleteSelectedSave().catch((error) => {
+      saveStatusEl.textContent = "Could not delete save";
+    });
   });
-});
 
-continueBtnEl.addEventListener("click", async () => {
-  if (continueBtnEl.disabled) return;
-  continueBtnEl.disabled = true;
-  try {
-    saveStatusEl.textContent = "Loading pilot save...";
-    await enterGameWithSelectedSave();
-  } catch (_error) {
-    console.log(_error.message);
-    saveStatusEl.textContent = "Could not load selected save";
-    continueBtnEl.disabled = false;
-  }
-});
+  continueBtnEl.addEventListener("click", async () => {
+    if (continueBtnEl.disabled) return;
+    continueBtnEl.disabled = true;
+    try {
+      saveStatusEl.textContent = "Loading pilot save...";
+      await enterGameWithSelectedSave();
+    } catch (_error) {
+      console.log(_error.message);
+      saveStatusEl.textContent = "Could not load selected save";
+      continueBtnEl.disabled = false;
+    }
+  });
 
-refreshMissionsBtn.addEventListener("click", async () => {
-  try {
-    await loadMissions();
-    flightStatusEl.textContent = "Mission board updated";
-  } catch (_error) {
-    flightStatusEl.textContent = "Could not refresh missions";
-  }
-});
+  refreshMissionsBtn.addEventListener("click", async () => {
+    try {
+      await loadMissions();
+      flightStatusEl.textContent = "Mission board updated";
+    } catch (_error) {
+      flightStatusEl.textContent = "Could not refresh missions";
+    }
+  });
 
 // Start flight & back-to-saves buttons
-backToSavesBtn.addEventListener("click", () => {
-  goBackToSaves().catch(() => {
-    saveStatusEl.textContent = "Could not return to saves";
+  backToSavesBtn.addEventListener("click", () => {
+    goBackToSaves().catch(() => {
+      saveStatusEl.textContent = "Could not return to saves";
+    });
   });
-});
 
 // ============================================================
 // BOOTSTRAP
@@ -1346,25 +1372,25 @@ backToSavesBtn.addEventListener("click", () => {
 // If a previous DB session token exists in localStorage, skips
 // the login screen and goes straight to save selection.
 // ============================================================
-function bootstrap() {
-  authOverlayEl.classList.remove("hidden");
-  saveOverlayEl.classList.add("hidden");
-  gameAppEl.classList.add("app-hidden");
-  document.body.classList.remove("game-mode");
+  function bootstrap() {
+    authOverlayEl.classList.remove("hidden");
+    saveOverlayEl.classList.add("hidden");
+    gameAppEl.classList.add("app-hidden");
+    document.body.classList.remove("game-mode");
 
-  const existingSession = localStorage.getItem("flightgame-db-session");
-  if (existingSession) {
-    dbSessionToken = existingSession;
-    authOverlayEl.classList.add("hidden");
-    saveOverlayEl.classList.remove("hidden");
-    loadSaves().catch(() => {
-      dbSessionToken = "";
-      localStorage.removeItem("flightgame-db-session");
-      authOverlayEl.classList.remove("hidden");
-      saveOverlayEl.classList.add("hidden");
-      dbAuthStatusEl.textContent = "Previous DB session expired. Please login again.";
-    });
+    const existingSession = localStorage.getItem("flightgame-db-session");
+    if (existingSession) {
+      dbSessionToken = existingSession;
+      authOverlayEl.classList.add("hidden");
+      saveOverlayEl.classList.remove("hidden");
+      loadSaves().catch(() => {
+        dbSessionToken = "";
+        localStorage.removeItem("flightgame-db-session");
+        authOverlayEl.classList.remove("hidden");
+        saveOverlayEl.classList.add("hidden");
+        dbAuthStatusEl.textContent = "Previous DB session expired. Please login again.";
+      });
+    }
   }
-}
 
-document.addEventListener("DOMContentLoaded", bootstrap);
+  document.addEventListener("DOMContentLoaded", bootstrap);
