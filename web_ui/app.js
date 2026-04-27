@@ -929,9 +929,14 @@ function startHomebaseFlight(base) {
 function formatPlantModal(baseIdent, currentPlants) {
   return `
     <div class="plant-menu">
-      <p class="menu-info">Plant Status: <strong>${currentPlants}</strong></p>
+      <p class="menu-info">
+        Plant Status: <strong>${currentPlants}</strong>
+      </p>
+
       <label class="slider-label">
-        Amount to trade: <span id="plantAmountValue">${currentPlants}</span>
+        Amount to trade:
+        <span id="plantAmountValue">${currentPlants}</span>
+
         <input
           id="plantSlider"
           class="plants-slider"
@@ -939,13 +944,26 @@ function formatPlantModal(baseIdent, currentPlants) {
           min="0"
           max="250"
           value="${currentPlants}"
-          oninput="document.getElementById('plantAmountValue').textContent = this.value"
+          oninput="
+            document.getElementById('plantAmountValue').textContent = this.value;
+            document.getElementById('buyPlantsBtn').textContent =
+              'Buy Plants (' + (this.value * 80) + ')';
+            document.getElementById('sellPlantsBtn').textContent =
+              'Sell Plants (' + (this.value * 50) + ')';
+          "
         />
       </label>
+
       <div class="menu-button-row">
-        <button id="buyPlantsBtn" class="menu-btn" type="button">Buy Plants (€80)</button>
-        <button id="sellPlantsBtn" class="menu-btn" type="button">Sell Plants (€50)</button>
+        <button id="buyPlantsBtn" class="menu-btn" type="button">
+          Buy Plants (${currentPlants * 80}€)
+        </button>
+
+        <button id="sellPlantsBtn" class="menu-btn" type="button">
+          Sell Plants (${currentPlants * 50}€)
+        </button>
       </div>
+
       <button class="menu-btn" type="button" onclick="closeModal()">Close</button>
     </div>
   `;
@@ -1075,7 +1093,6 @@ async function upgradePlanePart(part) {
             <p class="upgrade-title">Plane Upgrades</p>
             <p class="upgrade-balance">Balance: <strong>${formatMoney(data.money)}</strong></p>
           </div>
-          <button class="menu-btn close-small" onclick="closeModal()">×</button>
         </div>
         <div class="upgrade-grid">
           <div class="upgrade-card">
