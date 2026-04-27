@@ -1136,7 +1136,7 @@ function startSelectedMission() {
   const legAEndPct = 0.35;
   const holdEndPct = 0.58;
   const milestones = new Set();
-
+}
   async function step(now) {
     if (isPaused) {
       animationFrameId = requestAnimationFrame(step);
