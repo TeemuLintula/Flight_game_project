@@ -1157,8 +1157,7 @@ function startSelectedMission() {
           isPaused = true;
           pauseStartTime = performance.now();
 
-          appendCaption("⚠️ Random event!");
-          await randomEvent("duringFlight");
+          await randomEvent("duringFlight", 0);
 
           totalPausedTime += performance.now() - pauseStartTime;
           isPaused = false;

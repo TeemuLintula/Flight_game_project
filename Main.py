@@ -558,6 +558,7 @@ def get_plane_levels():
 def randomEvent():
     type = request.args.get("type")
     id = request.args.get("id")
+    event = {}
 
     if type == "duringFlight":
         event = duringflight_eventit.randomrandomiser(id)
@@ -566,7 +567,7 @@ def randomEvent():
     elif type == "homeBase":
         event = Homebase_eventit.randomrandomiser(id)
 
-    """ TÄSSÄ ESIMERKKI EVENTISTÄ
+    """ TÄSSÄ ESIMERKKI EVENTISTÄ 
     text = "Tämä on testi eventti"
     button = {
         "label" : "vaihtoehto 1",
