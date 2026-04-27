@@ -33,7 +33,7 @@ def GenerateMission(cursor):
             Pay = random.randint(5, 100)
             Name = f"{Location[0][1]} Cargo flight"
     else:
-        Illegal_Cargo = ["Illegal Humans", "TAX FREE SPICES"]
+        Illegal_Cargo = ["Monkeys", "TAX FREE SPICES"]
         Cargo = random.choice(Illegal_Cargo)
         cursor.execute(
             "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg, airport.ident FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'AF' or airport.continent = 'SA' or airport.iso_country = 'SY' or airport.iso_country = 'AF') ORDER BY RAND() LIMIT 1;")
@@ -41,7 +41,7 @@ def GenerateMission(cursor):
         cursor.execute(
             "SELECT airport.name, country.name, airport.latitude_deg, airport.longitude_deg, airport.ident FROM airport, country WHERE airport.iso_country = country.iso_country and airport.type != 'heliport' and (airport.continent = 'EU' or airport.continent = 'NA' or airport.iso_country = 'CN' or airport.iso_country = 'IN') ORDER BY RAND() LIMIT 1;")
         Destination = cursor.fetchall()
-        if Cargo == "ILLEGAL_HUMANS":
+        if Cargo == "Monkeys":
             Cargo_amount = random.randint(5, 100)
             Pay = random.randint(30, 150)
             Name = f"{Location[0][1]} Donkey flight"
