@@ -199,6 +199,180 @@ body.game-mode {
   background: rgba(255, 255, 255, 0.92);
 }
 
+/* Modal Styles */
+.action-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.action-modal.hidden {
+  display: none;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  width: min(460px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  padding: 20px;
+  z-index: 1001;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.modal-close-btn,
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-close-btn:hover,
+.close-btn:hover {
+  color: var(--accent);
+}
+
+.modal-body {
+  min-width: 100%;
+}
+
+.plant-menu,
+.upgrade-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upgrade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.upgrade-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.upgrade-balance {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.upgrade-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.upgrade-card {
+  flex: 1 1 120px;
+  min-width: 110px;
+  background: rgba(158, 176, 195, 0.4);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.upgrade-card .upgrade-name {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.upgrade-card .upgrade-level {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.upgrade-action {
+  width: 100%;
+}
+
+.close-small {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slider-label {
+  display: grid;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.plants-slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.menu-button-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.menu-info {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.menu-btn {
+  padding: 10px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--glass);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-error {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
 body.game-mode .status-chip,
 body.game-mode .status-btn,
 body.game-mode .mission-card,
@@ -513,6 +687,12 @@ body.game-mode .caption-line {
   margin: 0;
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.base-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
 }
 
 .meta-row {

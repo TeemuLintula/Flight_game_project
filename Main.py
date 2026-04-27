@@ -377,6 +377,90 @@ def check_plants():
     message = f"Your base has {plants} plants growing."
     return jsonify({"message": message, "plants": plants})
 
+@app.route("/api/plant-trade", methods=["POST"])
+def plant_trade():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json() or {}
+    base_ident = data.get("base")
+    player = data.get("player")
+    action = data.get("action")
+    amount = data.get("amount")
+
+    if not base_ident or not player or not action or amount is None:
+        return jsonify({"error": "Missing trade data"}), 400
+
+    try:
+        amount = int(amount)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid amount"}), 400
+
+    if amount <= 0:
+        return jsonify({"error": "Amount must be positive"}), 400
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT money FROM game WHERE screen_name = %s
+    """, (player,))
+    row = cursor.fetchone()
+    if not row:
+        return jsonify({"error": "Player not found"}), 404
+
+    current_money = int(row[0])
+    cursor.execute("""
+        SELECT ghb.plants, ghb.game_id
+        FROM game_home_base ghb
+        JOIN game g ON ghb.game_id = g.id
+        WHERE ghb.base_ident = %s AND g.screen_name = %s
+    """, (base_ident, player))
+    row = cursor.fetchone()
+    if not row:
+        return jsonify({"error": "Base not found for player"}), 404
+
+    current_plants, game_id = int(row[0]), row[1]
+    buy_price = 80
+    sell_price = 50
+
+    if action == "buy":
+        total_cost = amount * buy_price
+        if current_money < total_cost:
+            return jsonify({"error": "Not enough money"}), 400
+        new_plants = current_plants + amount
+        new_money = current_money - total_cost
+        message = f"Bought {amount} plant{'s' if amount != 1 else ''}."
+    elif action == "sell":
+        if amount > current_plants:
+            return jsonify({"error": "Not enough plants to sell"}), 400
+        total_cost = amount * sell_price
+        new_plants = current_plants - amount
+        new_money = current_money + total_cost
+        message = f"Sold {amount} plant{'s' if amount != 1 else ''}."
+    else:
+        return jsonify({"error": "Invalid action"}), 400
+
+    cursor.execute("""
+        UPDATE game_home_base
+        SET plants = %s
+        WHERE game_id = %s AND base_ident = %s
+    """, (new_plants, game_id, base_ident))
+
+    cursor.execute("""
+        UPDATE game
+        SET money = %s
+        WHERE screen_name = %s
+    """, (new_money, player))
+    conn.commit()
+
+    return jsonify({
+        "message": message,
+        "plants": new_plants,
+        "money": new_money,
+        "trade_cost": total_cost,
+        "action": action
+    })
+
 # Placeholder lentokoneen päivitykselle
 @app.route("/api/upgrade-plane", methods=["POST"])
 def upgrade_plane():
@@ -386,11 +470,14 @@ def upgrade_plane():
 
     data = request.get_json()
     player = data.get("player")
+    part = data.get("part")  # New: which part to upgrade
 
-    if not player:
-        return jsonify({"error": "Missing player"}), 400
+    if not player or not part:
+        return jsonify({"error": "Missing player or part"}), 400
 
-    # Placeholder: deduct money and upgrade plane (assuming plane stats exist)
+    if part not in ["ruuma", "moottori", "istuinpaikat"]:
+        return jsonify({"error": "Invalid part"}), 400
+
     cursor = conn.cursor()
     cursor.execute("""
         SELECT money FROM game WHERE screen_name = %s
@@ -401,17 +488,71 @@ def upgrade_plane():
         return jsonify({"error": "Player not found"}), 404
 
     current_money = int(row[0])
-    upgrade_cost = 1000  # Example cost
+    upgrade_cost = 1000  # Example cost per upgrade
 
     if current_money < upgrade_cost:
         return jsonify({"error": "Not enough money"}), 400
 
+    # Get current levels
+    cursor.execute("""
+        SELECT ruuma, moottori, istuinpaikat FROM airplane WHERE game_id = (SELECT id FROM game WHERE screen_name = %s)
+    """, (player,))
+    plane_row = cursor.fetchone()
+    if not plane_row:
+        return jsonify({"error": "Plane not found"}), 404
+
+    current_levels = {
+        "ruuma": plane_row[0],
+        "moottori": plane_row[1],
+        "istuinpaikat": plane_row[2]
+    }
+
+    # Upgrade the specific part
+    cursor.execute(f"""
+        UPDATE airplane SET {part} = {part} + 1 WHERE game_id = (SELECT id FROM game WHERE screen_name = %s)
+    """, (player,))
+
+    # Deduct money
     cursor.execute("""
         UPDATE game SET money = money - %s WHERE screen_name = %s
     """, (upgrade_cost, player))
     conn.commit()
 
-    return jsonify({"message": "Plane upgraded successfully!", "cost": upgrade_cost})
+    new_money = current_money - upgrade_cost
+    new_levels = current_levels.copy()
+    new_levels[part] += 1
+
+    return jsonify({
+        "message": f"{part.capitalize()} upgraded successfully!",
+        "cost": upgrade_cost,
+        "money": new_money,
+        "levels": new_levels
+    })
+
+@app.route("/api/get-plane-levels", methods=["GET"])
+def get_plane_levels():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    player = request.args.get("player")
+    if not player:
+        return jsonify({"error": "Missing player"}), 400
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT ruuma, moottori, istuinpaikat FROM airplane WHERE game_id = (SELECT id FROM game WHERE screen_name = %s)
+    """, (player,))
+    plane_row = cursor.fetchone()
+    if not plane_row:
+        return jsonify({"error": "Plane not found"}), 404
+
+    levels = {
+        "ruuma": plane_row[0],
+        "moottori": plane_row[1],
+        "istuinpaikat": plane_row[2]
+    }
+    return jsonify({"levels": levels})
 
 @app.route("/api/randomEvent", methods=["GET"])
 def randomEvent():

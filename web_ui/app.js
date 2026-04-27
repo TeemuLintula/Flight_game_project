@@ -132,6 +132,51 @@ const backToSavesBtn = document.getElementById("backToSavesBtn");
 const refreshMissionsBtn = document.getElementById("refreshMissionsBtn");
 
 // ============================================================
+// MODAL SYSTEM – Reusable popup for base actions & menus
+// ============================================================
+
+// Creates modal container if it doesn't exist
+function ensureModalExists() {
+  if (document.getElementById("actionModal")) return;
+  const modal = document.createElement("div");
+  modal.id = "actionModal";
+  modal.className = "action-modal hidden";
+  modal.innerHTML = `
+    <div class="modal-overlay"></div>
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3 id="modalTitle">Action</h3>
+        <button class="modal-close-btn" id="modalCloseBtn">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Opens modal with title and content
+function openModal(title, contentHTML) {
+  ensureModalExists();
+  const modal = document.getElementById("actionModal");
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").innerHTML = contentHTML;
+  modal.classList.remove("hidden");
+  
+  // Close on overlay click
+  modal.querySelector(".modal-overlay").onclick = closeModal;
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+}
+
+// Closes the modal
+function closeModal() {
+  const modal = document.getElementById("actionModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    document.getElementById("modalBody").innerHTML = "";
+  }
+}
+
+// ============================================================
 // LEAFLET MAP SETUP
 // Initialises the interactive map centered on Europe,
 // adds the OpenStreetMap tile layer, and moves zoom controls
@@ -221,7 +266,7 @@ function clearButtons(){
 }
 // ============================================================
 // UI PANEL TOGGLING
-// Switches the left panel between mission list, captain log, and base selection.
+// Switches the right panel between different elements.
 // ============================================================
 
 // Appends a timestamped line to the captain's log feed
@@ -241,6 +286,7 @@ function showCaptainLog(mission) {
   captionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
   baseActionsEl.classList.add("hidden");
+  baseActionsEl.innerHTML = "";
   // captionListEl.innerHTML = "";
   refreshMapSize();
   clearButtons();
@@ -254,6 +300,7 @@ function showMissionContract(mission) {
   baseListEl.classList.add("hidden");
   missionBasetglEl.classList.add("hidden");
   baseActionsEl.classList.add("hidden");
+  baseActionsEl.innerHTML = "";
 
 
   const contractTXT = `
@@ -279,7 +326,10 @@ function showMissionSelection() {
   missionListEl.classList.remove("hidden");
   baseListEl.classList.add("hidden");
   baseActionsEl.classList.add("hidden");
-  missionBasetglEl.classList.remove("hidden"); 
+  baseActionsEl.innerHTML = "";
+  missionBasetglEl.classList.remove("hidden");
+  missionBasetglEl.classList.remove("active");
+  missionBasetglEl.textContent = "Select Bases";
   refreshMapSize();
   clearButtons();
 
@@ -295,10 +345,16 @@ function showBaseselection() {
   missionListEl.classList.add("hidden");
   baseListEl.classList.remove("hidden");
   missionBasetglEl.classList.remove("hidden");
+  missionBasetglEl.classList.add("active");
+  missionBasetglEl.textContent = "Show Missions";
   baseActionsEl.classList.add("hidden");
+  baseActionsEl.innerHTML = "";
   loadBases();
   refreshMapSize();
   clearButtons();
+  if (player && player.selectedBase) {
+    renderButton("Base Actions", () => showbaseActions());
+  }
 }
 
 function showbaseActions(base = null) {
@@ -311,14 +367,25 @@ function showbaseActions(base = null) {
   captionListEl.classList.add("hidden");
   missionListEl.classList.add("hidden");
   baseListEl.classList.add("hidden");
-  missionBasetglEl.classList.add("hidden");
+  missionBasetglEl.classList.remove("hidden");
+  missionBasetglEl.classList.remove("active");
+  missionBasetglEl.textContent = "Back to Missions";
+  clearButtons();
+  document.getElementById("missionActions").classList.add("hidden");
+  refreshMapSize();
   baseActionsEl.innerHTML = "";
   
-  const btn = document.createElement("button");
-  btn.className = "mission-btn";
-  btn.textContent = "Check Plants";
-  btn.addEventListener("click", () => checkPlants(selectedBase.ident));
-  baseActionsEl.appendChild(btn);
+  const checkPlantsBtn = document.createElement("button");
+  checkPlantsBtn.className = "mission-btn";
+  checkPlantsBtn.textContent = "Check Plants";
+  checkPlantsBtn.addEventListener("click", () => checkPlants(selectedBase.ident));
+  baseActionsEl.appendChild(checkPlantsBtn);
+
+  const upgradeBtn = document.createElement("button");
+  upgradeBtn.className = "mission-btn";
+  upgradeBtn.textContent = "Upgrade Plane";
+  upgradeBtn.addEventListener("click", () => upgradePlane());
+  baseActionsEl.appendChild(upgradeBtn);
 
   const backBtn = document.createElement("button");
   backBtn.className = "mission-btn";
@@ -328,18 +395,18 @@ function showbaseActions(base = null) {
 }
 
 function toggleBaseSelection() {
+  if (baseActionsEl && !baseActionsEl.classList.contains("hidden")) {
+    showMissionSelection();
+    return;
+  }
+
   missionBasetglEl.classList.toggle("active");
   if (missionBasetglEl.classList.contains("active")) {
     missionBasetglEl.textContent = "Show Missions";
     showBaseselection();
-  } 
-  else if (missionBasetglEl.classList.contains("active") == false) {
+  } else {
     missionBasetglEl.textContent = "Select Bases";
     showMissionSelection();
-  }
-  else {
-    missionBasetglEl.textContent = "Back to base";
-    showbaseActions();
   }
 }
 missionBasetglEl.addEventListener("click", toggleBaseSelection);
@@ -648,6 +715,8 @@ function createBaseCard(base) {
     card.classList.add("active");
     clearMapObjects();
     drawPlayerLocationMarker();
+    clearButtons();
+    renderButton("Base Actions", () => showbaseActions(base));
 
     const baseLat = base.lat;
     const baseLon = base.lon;
@@ -842,37 +911,195 @@ function startHomebaseFlight(base) {
 }
 
 //=============================================================
-// Base action functions
+// Base action menu helpers
 //=============================================================
+
+function formatPlantModal(baseIdent, currentPlants) {
+  return `
+    <div class="plant-menu">
+      <p class="menu-info">Plant Status: <strong>${currentPlants}</strong></p>
+      <label class="slider-label">
+        Amount to trade: <span id="plantAmountValue">${currentPlants}</span>
+        <input
+          id="plantSlider"
+          class="plants-slider"
+          type="range"
+          min="0"
+          max="250"
+          value="${currentPlants}"
+          oninput="document.getElementById('plantAmountValue').textContent = this.value"
+        />
+      </label>
+      <div class="menu-button-row">
+        <button id="buyPlantsBtn" class="menu-btn" type="button">Buy Plants (€80)</button>
+        <button id="sellPlantsBtn" class="menu-btn" type="button">Sell Plants (€50)</button>
+      </div>
+      <button class="menu-btn" type="button" onclick="closeModal()">Close</button>
+    </div>
+  `;
+}
+
+function attachPlantModalListeners(baseIdent) {
+  const buyButton = document.getElementById("buyPlantsBtn");
+  const sellButton = document.getElementById("sellPlantsBtn");
+  const slider = document.getElementById("plantSlider");
+
+  if (buyButton) {
+    buyButton.addEventListener("click", () => handlePlantTrade("buy", slider ? slider.value : 0, baseIdent));
+  }
+  if (sellButton) {
+    sellButton.addEventListener("click", () => handlePlantTrade("sell", slider ? slider.value : 0, baseIdent));
+  }
+}
 
 async function checkPlants(baseIdent) {
   try {
     const data = await fetchJson(`/api/check-plants?base=${baseIdent}&player=${encodeURIComponent(player.name)}`);
-    const plantStatusEL = document.createElement("p");
-    plantStatusEL.textContent = `Plant status: ${data.plants}`;
-    baseActionsEl.appendChild(plantStatusEL);
+    openModal("Plant Management", formatPlantModal(baseIdent, data.plants));
+    attachPlantModalListeners(baseIdent);
   } catch (error) {
     console.error("Error checking plants:", error);
-    const errorEl = document.createElement("p");
-    errorEl.textContent = "Failed to check plants.";
-    baseActionsEl.appendChild(errorEl);
+    openModal("Plant Management", "<p class='menu-error'>Failed to check plants.</p>");
+  }
+}
+
+async function handlePlantTrade(action, amount, baseIdent) {
+  const parsedAmount = Number(amount);
+  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    openModal("Plant Management", "<p class='menu-error'>Enter a valid plant amount first.</p>");
+    return;
+  }
+
+  try {
+    const data = await fetchJson("/api/plant-trade", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        player: player.name,
+        base: baseIdent,
+        action,
+        amount: parsedAmount
+      })
+    });
+
+    player.money = data.money;
+    creditsEl.textContent = String(data.money);
+    openModal(
+      "Plant Management",
+      `
+        <div class="plant-menu">
+          <p class="menu-info">${data.message}</p>
+          <p class="menu-info">Plants now: <strong>${data.plants}</strong></p>
+          <p class="menu-info">Balance: <strong>${formatMoney(data.money)}</strong></p>
+          <button class="menu-btn" type="button" onclick="closeModal()">Close</button>
+        </div>
+      `
+    );
+  } catch (error) {
+    openModal("Plant Management", `<p class='menu-error'>${error.message}</p>`);
   }
 }
 
 async function upgradePlane() {
   try {
+    const levelsData = await fetchJson(`/api/get-plane-levels?player=${encodeURIComponent(player.name)}`);
+    const levels = levelsData.levels;
+
+    const content = `
+      <div class="upgrade-menu">
+        <div class="upgrade-header">
+          <div>
+            <p class="upgrade-title">Plane Upgrades</p>
+            <p class="upgrade-balance">Balance: <strong>${formatMoney(player.money)}</strong></p>
+          </div>
+        </div>
+        <div class="upgrade-grid">
+          <div class="upgrade-card">
+            <p class="upgrade-name">Ruumat</p>
+            <p class="upgrade-level">Level ${levels.ruuma}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000</button>
+          </div>
+          <div class="upgrade-card">
+            <p class="upgrade-name">Istuinpaikat</p>
+            <p class="upgrade-level">Level ${levels.istuinpaikat}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000</button>
+          </div>
+          <div class="upgrade-card">
+            <p class="upgrade-name">Moottori</p>
+            <p class="upgrade-level">Level ${levels.moottori}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000</button>
+          </div>
+        </div>
+      </div>
+    `;
+    openModal("Plane Upgrade", content);
+  } catch (error) {
+    console.error("Error loading plane levels:", error);
+    const content = `
+      <div class="upgrade-menu">
+        <p class="menu-error">Failed to load plane levels.</p>
+        <button class="menu-btn" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    openModal("Plane Upgrade", content);
+  }
+}
+
+async function upgradePlanePart(part) {
+  try {
     const data = await fetchJson("/api/upgrade-plane", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player: player.name })
+      body: JSON.stringify({ player: player.name, part: part })
     });
-    appendCaption(`Plane upgraded: ${data.message}`);
-    showCaptainLog({ Name: "Base Management" });
+    player.money = data.money;
+    creditsEl.textContent = String(data.money);
+    const content = `
+      <div class="upgrade-menu">
+        <div class="upgrade-header">
+          <div>
+            <p class="upgrade-title">Plane Upgrades</p>
+            <p class="upgrade-balance">Balance: <strong>${formatMoney(data.money)}</strong></p>
+          </div>
+          <button class="menu-btn close-small" onclick="closeModal()">×</button>
+        </div>
+        <div class="upgrade-grid">
+          <div class="upgrade-card">
+            <p class="upgrade-name">Ruumat</p>
+            <p class="upgrade-level">Level ${data.levels.ruuma}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000</button>
+          </div>
+          <div class="upgrade-card">
+            <p class="upgrade-name">Istuinpaikat</p>
+            <p class="upgrade-level">Level ${data.levels.istuinpaikat}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000</button>
+          </div>
+          <div class="upgrade-card">
+            <p class="upgrade-name">Moottori</p>
+            <p class="upgrade-level">Level ${data.levels.moottori}</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000</button>
+          </div>
+        </div>
+      </div>
+    `;
+    openModal("Plane Upgrade", content);
   } catch (error) {
-    console.error("Error upgrading plane:", error);
-    appendCaption("Failed to upgrade plane.");
+    console.error("Error upgrading plane part:", error);
+    const content = `
+      <div class="upgrade-menu">
+        <p class="menu-error">Failed to upgrade plane part.</p>
+        <button class="menu-btn" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    openModal("Plane Upgrade", content);
   }
 }
+
+// Make functions global for onclick handlers
+window.upgradePlane = upgradePlane;
+window.upgradePlanePart = upgradePlanePart;
 
 // Main flight sequence: animates the plane through three legs:
 //   1. Fly from player location to mission pickup airport
