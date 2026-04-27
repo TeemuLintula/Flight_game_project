@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+import random
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
 from Eventit import GameSetup, Mission
@@ -7,6 +8,90 @@ from Eventit.random_eventit import airport_eventit, duringflight_eventit, Homeba
 #tallentaa luodut yhteydet palvelimeen
 connections = {}
 app = Flask(__name__, template_folder='web_ui')
+
+# ============================================================
+# PLAYER CLASS - Backend representation of player state
+# ============================================================
+class Player:
+    def __init__(self, name, conn):
+        self.name = name
+        self.conn = conn
+        self.location = None
+        self.bases = []
+        self.money = 0
+        self.co2_remaining = 0
+    
+    def load_game_state(self):
+        """Load player's current game state from database"""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT money, co2_budget, co2_consumed, location, screen_name
+            FROM game WHERE screen_name = %s
+        """, (self.name,))
+        
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"Player {self.name} not found")
+        
+        money, budget, consumed, location, screen_name = row
+        self.money = money
+        self.co2_remaining = budget - consumed
+        
+        cursor.execute("""
+            SELECT airport.name,
+                   country.name,
+                   airport.latitude_deg,
+                   airport.longitude_deg,
+                   airport.ident
+            FROM airport
+            JOIN country ON airport.iso_country = country.iso_country
+            WHERE airport.ident = %s
+        """, (location,))
+        
+        airport_data = cursor.fetchone()
+        if airport_data:
+            airport_name, country_name, lat, lon, ident = airport_data
+            self.location = {
+                "airport": airport_name,
+                "country": country_name,
+                "lat": float(lat),
+                "lon": float(lon),
+                "ident": ident
+            }
+    
+    def load_bases(self):
+        """Load all owned bases for this player"""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT hb.name, hb.continent, hb.latitude_deg, hb.longitude_deg, hb.ident
+            FROM game_home_base ghb
+            JOIN home_base hb ON ghb.base_ident = hb.ident
+            WHERE ghb.game_id = (SELECT id FROM game WHERE screen_name = %s)
+        """, (self.name,))
+        
+        rows = cursor.fetchall()
+        self.bases = [
+            {
+                "airport": name,
+                "country": continent,
+                "lat": float(lat),
+                "lon": float(lon),
+                "ident": ident,
+            }
+            for name, continent, lat, lon, ident in rows
+        ]
+    
+    def is_at_homebase(self):
+        """Check if player's current location is one of their bases"""
+        if not self.location or not self.bases:
+            return False
+        return any(base["ident"] == self.location["ident"] for base in self.bases)
+    
+    def get_selected_base(self):
+        """Get the base player is currently at"""
+        if not self.location:
+            return None
+        return next((b for b in self.bases if b["airport"] == self.location["airport"]), None)
 
 def get_conn():
     """Get the DB connection for the current session, reconnecting if needed."""
@@ -72,43 +157,22 @@ def game_state():
     if not conn:
         return jsonify({"error": "No session"}), 401
 
-    player = request.args.get("player")
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-                   SELECT money, co2_budget, co2_consumed, location, screen_name
-                   FROM game
-                   WHERE screen_name = %s
-                   """, (player,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return jsonify({"error": "Player not found"}), 404
-
-    money, budget, consumed, location, screen_name = row
-
-    cursor.execute("""
-                   SELECT airport.name,
-                          country.name,
-                          airport.latitude_deg,
-                          airport.longitude_deg
-                   FROM airport
-                            JOIN country ON airport.iso_country = country.iso_country
-                   WHERE airport.ident = %s
-                   """, (location,))
-
-    airport_name, country_name, lat, lon = cursor.fetchone()
+    player_obj = Player(request.args.get("player"), conn)
+    
+    try:
+        player_obj.load_game_state()
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
 
     return jsonify({
-        "money": money,
-        "co2_remaining": budget - consumed,
-        "location_airport": airport_name,
-        "location_country": country_name,
-        "location_lat": float(lat),
-        "location_lon": float(lon),
-        "player": screen_name
+        "money": player_obj.money,
+        "co2_remaining": player_obj.co2_remaining,
+        "location_airport": player_obj.location["airport"],
+        "location_country": player_obj.location["country"],
+        "location_lat": player_obj.location["lat"],
+        "location_lon": player_obj.location["lon"],
+        "location_ident": player_obj.location["ident"],
+        "player": player_obj.name
     })
 @app.route("/api/callMissions", methods=["GET"])
 def callMissions():
@@ -199,25 +263,15 @@ def bases():
     conn = get_conn()
     if not conn:
         return jsonify({"error": "Session expired"}), 401
-    cursor = conn.cursor()
-    player = request.args.get("player")
-    cursor.execute("""
-        SELECT hb.name, hb.continent, hb.latitude_deg, hb.longitude_deg, hb.ident
-        FROM game_home_base ghb
-        JOIN home_base hb ON ghb.base_ident = hb.ident
-        WHERE ghb.game_id = (SELECT id FROM game WHERE screen_name = %s)
-    """, (player,))
-    rows = cursor.fetchall()
-    bases = []
-    for name, continent, lat, lon, ident in rows:
-        bases.append({
-            "airport": name,
-            "country": continent,
-            "lat": float(lat),
-            "lon": float(lon),
-            "ident": ident,
-        })
-    return jsonify({"bases": bases})
+    
+    player_obj = Player(request.args.get("player"), conn)
+    
+    try:
+        player_obj.load_bases()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"bases": player_obj.bases})
 
 @app.route("/api/start-homebase", methods=["POST"])
 def start_homebase():
