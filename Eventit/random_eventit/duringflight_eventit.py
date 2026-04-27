@@ -1,5 +1,3 @@
-import sys
-import time
 import random
 class tapahtuma:
     instances = []

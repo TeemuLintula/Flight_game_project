@@ -1,12 +1,12 @@
-import sys
-import time
 import random
+class tapahtuma:
+    instances = []
+    def __init__(self, id, text="", buttons=None):
+        self.id = id
+        self.text = text
+        self.buttons = buttons
+        tapahtuma.instances.append(self)
 
-def hidastulostus(teksti, nopeus=0.03):
-    for c in teksti + "\n":
-        sys.stdout.write(c)
-        sys.stdout.flush()
-        time.sleep(nopeus)
 
 def tulli():
 
@@ -57,18 +57,17 @@ def nainen():
 
 tapahtumat = [nainen, tulli]
 
-def randomrandomiser():
-    tapahtuma = random.choice(tapahtumat)
-    tapahtuma()
-
-def randomevent_a(GameSetup):
-    luku = random.randint(1,25)
-    GameSetup.cursor.execute(f"select game.co2_budget, game.co2_consumed from game where game.screen_name = '{GameSetup.name}'")
-    budget = GameSetup.cursor.fetchall()
-    budget = budget[0][0] - budget[0][1]
-    if budget < 0:
-        if luku <= 5:
-            co2limit_0(GameSetup)
-            #Tähän se otettiin kiinni jne
-    elif luku == 1:
-        randomrandomiser()
+def randomrandomiser(id):
+    tapahtumat = [2, 8, 11]
+    event = {}
+    newid = int(id)
+    if int(id) == 0:
+        newid = random.choice(tapahtumat)
+    for i in tapahtuma.instances:
+        if i.id == newid:
+            event = {
+                "text": i.text,
+                "buttons": i.buttons
+            }
+    print(event)
+    return event
