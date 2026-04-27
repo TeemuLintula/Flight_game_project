@@ -374,24 +374,36 @@ function showbaseActions(base = null) {
   document.getElementById("missionActions").classList.add("hidden");
   refreshMapSize();
   baseActionsEl.innerHTML = "";
+
+  const baseImg = document.createElement("img");
+  baseImg.src = "http://127.0.0.1:5000/static/images/" + selectedBase.ident + ".png";
+  console.log(baseImg.src);
+  baseImg.alt = `${selectedBase.airport} image`;
+  baseImg.className = "base-image";
+  baseActionsEl.appendChild(baseImg);
+
+  const baseActionbtnsEl = document.createElement("div");
+  baseActionbtnsEl.className = "base-action-btns";
   
   const checkPlantsBtn = document.createElement("button");
   checkPlantsBtn.className = "mission-btn";
   checkPlantsBtn.textContent = "Check Plants";
   checkPlantsBtn.addEventListener("click", () => checkPlants(selectedBase.ident));
-  baseActionsEl.appendChild(checkPlantsBtn);
+  baseActionbtnsEl.appendChild(checkPlantsBtn);
 
   const upgradeBtn = document.createElement("button");
   upgradeBtn.className = "mission-btn";
   upgradeBtn.textContent = "Upgrade Plane";
   upgradeBtn.addEventListener("click", () => upgradePlane());
-  baseActionsEl.appendChild(upgradeBtn);
+  baseActionbtnsEl.appendChild(upgradeBtn);
 
-  const backBtn = document.createElement("button");
-  backBtn.className = "mission-btn";
-  backBtn.textContent = "Back to Missions";
-  backBtn.addEventListener("click", showMissionSelection);
-  baseActionsEl.appendChild(backBtn);
+  const buyNewBaseBtn = document.createElement("button");
+  buyNewBaseBtn.className = "mission-btn";
+  buyNewBaseBtn.textContent = "Buy New Bases";
+  buyNewBaseBtn.addEventListener("click", () => buyNewBase());
+  baseActionbtnsEl.appendChild(buyNewBaseBtn);
+
+  baseActionsEl.appendChild(baseActionbtnsEl);
 }
 
 function toggleBaseSelection() {

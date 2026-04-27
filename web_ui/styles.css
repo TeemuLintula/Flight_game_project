@@ -692,7 +692,15 @@ body.game-mode .caption-line {
 .base-actions {
   margin-top: 12px;
   display: flex;
+  flex-direction: column;
   gap: 10px;
+}
+
+.base-action-btns {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .meta-row {
