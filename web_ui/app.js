@@ -293,6 +293,7 @@ function showCaptainLog(mission) {
 }
 
 function showMissionContract(mission) {
+  clearCaptainLog();
   missionPanelTitleEl.textContent = "";
   missionPanelSubtitleEl.textContent = "";
   captionListEl.classList.remove("hidden");
@@ -316,6 +317,10 @@ function showMissionContract(mission) {
   clearButtons();
   renderButton("Start Mission", startSelectedMission)
   renderButton("Change Mission", showMissionSelection)
+}
+
+function clearCaptainLog(){
+  captionListEl.innerHTML = "";
 }
 
 // Switches panel back to the mission selection list
@@ -1141,6 +1146,7 @@ function startSelectedMission() {
 
     const selectedMission = player.selectedMission;
     stopFlightAnimation();
+    clearCaptainLog();
     showCaptainLog(selectedMission);
     appendCaption(`Mission accepted: ${selectedMission.Name}`);
 
@@ -1180,8 +1186,8 @@ function startSelectedMission() {
 
             if (progress > 0.2 && !milestones.has("event-a")) {
                 milestones.add("event-a");
-                //RANDOM EVENTTI TÄSSÄ
-                if (true) {
+                const x = Math.floor(Math.random() * 8);
+                if (x == 2) {
 
                     isPaused = true;
                     pauseStartTime = performance.now();
@@ -1198,8 +1204,9 @@ function startSelectedMission() {
             if (progress > 0.2 && !milestones.has("at-gate")) {
                 appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
                 milestones.add("at-gate");
-                //RANDOM EVENTTI TÄSSÄ
-                if (true) {
+                const x = Math.floor(Math.random() * 8);
+                console.log(x);
+                if (x == 2) {
 
                     isPaused = true;
                     pauseStartTime = performance.now();
@@ -1231,8 +1238,12 @@ function startSelectedMission() {
             }
 
             stopFlightAnimation();
-            completeMissionOnBackend(selectedMission);
+            await completeMissionOnBackend(selectedMission);
             await loadGameState();
+            await loadMissions();
+
+            showMissionSelection();
+            refreshMapSize();
         }
 
         animationFrameId = requestAnimationFrame(step);
@@ -1250,8 +1261,6 @@ function startSelectedMission() {
                 for (const btn of data.event.buttons) {
                     renderButton(btn.label, async () => {
                         clearButtons();
-
-// Continue chain OR resolve if end
                         if (btn.id) {
                             await randomEvent(type, btn.id);
                         }
