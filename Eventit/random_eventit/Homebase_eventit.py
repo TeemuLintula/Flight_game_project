@@ -12,7 +12,7 @@ class tapahtuma:
 
 skinwalker = tapahtuma(2)
 skinwalker.text = (
-    "Someone starts to knock your door.\n"
+    "It's 3am and someone starts to knock on your door.\n"
     "You check through the peephole and see a pale tall man.\n"
     "He says: 'Can you open the door, I’m starving.'\n"
     "What will you do?"
@@ -35,7 +35,7 @@ skinwalker_question.buttons = [
 ]
 
 skinwalker_safe = tapahtuma(6)
-skinwalker_safe.text = "He stares through the peephole... then leaves. You survive."
+skinwalker_safe.text = "He stares through the peephole... then leaves."
 skinwalker_safe.buttons = [{"label": "Continue", "id": 1}]
 
 skinwalker_silent = tapahtuma(5)
@@ -52,7 +52,7 @@ naapuri.buttons = [
 ]
 
 naapuri_yes = tapahtuma(8)
-naapuri_yes.text = "Greg complains about weird smells. Will you stop?"
+naapuri_yes.text = "Greg complains about weird smells coming from the base. Will you stop producing?"
 naapuri_yes.buttons = [
     {"label": "Yes", "id": 10},
     {"label": "No", "id": 11}
