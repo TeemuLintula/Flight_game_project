@@ -565,7 +565,7 @@ class NewBase():
         self.price = price
 
     @app.route("/api/available-bases", methods=["GET"])
-    def listNewBasesForSale():
+    def listNewBasesForSale(self):
         conn = get_conn()
         if not conn:
             return jsonify({"error": "Session expired"}), 401
@@ -596,7 +596,7 @@ class NewBase():
         return jsonify({"bases": bases_for_sale})
     
     @app.route("/api/buy-base", methods=["POST"])
-    def buyNewBase():
+    def buyNewBase(self):
         conn = get_conn()
         if not conn:
             return jsonify({"error": "Session expired"}), 401
