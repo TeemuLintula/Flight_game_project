@@ -554,6 +554,96 @@ def get_plane_levels():
     }
     return jsonify({"levels": levels})
 
+@app.route("/api/available-bases", methods=["GET"])
+class NewBase():
+    def __init__(self, ident, name, continent, lat, lon, price):
+        self.ident = ident
+        self.name = name
+        self.continent = continent
+        self.lat = lat
+        self.lon = lon
+        self.price = price
+
+    @app.route("/api/available-bases", methods=["GET"])
+    def listNewBasesForSale():
+        conn = get_conn()
+        if not conn:
+            return jsonify({"error": "Session expired"}), 401
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT ident, name, continent, latitude_deg, longitude_deg, price
+            FROM home_base
+        """)
+        rows = cursor.fetchall()
+        player = Player.name
+        print(f"Player for available bases: {player}")
+        cursor.execute("""
+            SELECT base_ident FROM game_home_base WHERE game_id = (SELECT id FROM game WHERE screen_name = %s)
+        """, (player,))
+        owned_bases_rows = cursor.fetchall()
+        print(f"Owned bases rows: {owned_bases_rows}")
+        owned_bases = []
+        bases_for_sale = []
+
+        for ident, name, continent, lat, lon, price in rows:
+            if ident in owned_bases:
+                continue  # skip already-owned bases
+
+            price = int(price)
+            base = NewBase(ident, name, continent, lat, lon, price)
+            bases_for_sale.append(base.__dict__)
+        return jsonify({"bases": bases_for_sale})
+    
+    @app.route("/api/buy-base", methods=["POST"])
+    def buyNewBase():
+        conn = get_conn()
+        if not conn:
+            return jsonify({"error": "Session expired"}), 401
+
+        data = request.get_json()
+        player = data.get("player")
+        base_ident = data.get("baseIdent")
+        print(f"Buying base {base_ident} for player {player}")
+
+        if not player or not base_ident:
+            return jsonify({"error": "Missing player or base identifier"}), 400
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT money FROM game WHERE screen_name = %s
+        """, (player,))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"error": "Player not found"}), 404
+
+        current_money = int(row[0])
+        cursor.execute("""
+            SELECT price FROM home_base WHERE ident = %s
+        """, (base_ident,))
+        base_row = cursor.fetchone()
+        if not base_row:
+            return jsonify({"error": "Base not found"}), 404
+
+        base_price = int(base_row[0])
+        if current_money < base_price:
+            return jsonify({"error": "Not enough money to buy this base"}), 400
+
+        # Deduct money and add base to player's owned bases
+        cursor.execute("""
+            UPDATE game SET money = money - %s WHERE screen_name = %s
+        """, (base_price, player))
+        
+        cursor.execute("""
+            INSERT INTO game_home_base (game_id, base_ident, plants)
+            VALUES ((SELECT id FROM game WHERE screen_name = %s), %s, 0)
+        """, (player, base_ident))
+        
+        conn.commit()
+
+        return jsonify({"message": "Base purchased successfully!", "money": current_money - base_price})
+
+    
 @app.route("/api/randomEvent", methods=["GET"])
 def randomEvent():
     type = request.args.get("type")

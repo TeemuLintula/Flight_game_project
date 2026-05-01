@@ -400,7 +400,7 @@ function showbaseActions(base = null) {
   const buyNewBaseBtn = document.createElement("button");
   buyNewBaseBtn.className = "mission-btn";
   buyNewBaseBtn.textContent = "Buy New Bases";
-  buyNewBaseBtn.addEventListener("click", () => buyNewBase());
+  buyNewBaseBtn.addEventListener("click", () => listNewBasesForSale());
   baseActionbtnsEl.appendChild(buyNewBaseBtn);
 
   baseActionsEl.appendChild(baseActionbtnsEl);
@@ -947,9 +947,9 @@ function formatPlantModal(baseIdent, currentPlants) {
           oninput="
             document.getElementById('plantAmountValue').textContent = this.value;
             document.getElementById('buyPlantsBtn').textContent =
-              'Buy Plants (' + (this.value * 80) + ')';
+              'Buy Plants (' + (this.value * 80) + '€)';
             document.getElementById('sellPlantsBtn').textContent =
-              'Sell Plants (' + (this.value * 50) + ')';
+              'Sell Plants (' + (this.value * 50) + '€)';
           "
         />
       </label>
@@ -1125,6 +1125,56 @@ async function upgradePlanePart(part) {
     openModal("Plane Upgrade", content);
   }
 }
+
+async function listNewBasesForSale() {
+  try {
+    const data = await fetchJson("/api/available-bases");
+    const bases = data.bases;
+    const content = `
+      <div class="base-sale-menu">
+        <p class="menu-info">Available Bases for Purchase:</p>
+        <ul class="modal-base-list">
+          ${bases.map(base => `<li>${base.name} (${base.continent}) - ${formatMoney(base.price)} <button class="menu-btn" onclick="buyNewBase('${base.ident}')">Buy</button></li>`).join("")}
+        </ul>
+        <button class="menu-btn" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    openModal("Buy New Bases", content);
+  } catch (error) {
+    console.error("Error fetching available bases:", error);
+    const content = `
+      <div class="base-sale-menu">
+        <p class="menu-error">Failed to load available bases.</p>
+      </div>
+    `;
+    openModal("Buy New Bases", content);
+  }
+}
+
+async function buyNewBase(baseIdent) {
+  try {
+    const data = await fetchJson("/api/buy-base", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player: player.name, baseIdent })
+    });
+    player.money = data.money;
+    creditsEl.textContent = String(data.money);
+    appendCaption(`Purchased new base: ${data.baseName}`);
+    await loadBases();
+    closeModal();
+  } catch (error) {
+    console.error("Error buying new base:", error);
+    const content = `
+      <div class="base-sale-menu">
+        <p class="menu-error">Failed to purchase base.</p>
+        <button class="menu-btn" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    openModal("Buy New Bases", content);
+  }
+}
+
 
 // Make functions global for onclick handlers
 window.upgradePlane = upgradePlane;

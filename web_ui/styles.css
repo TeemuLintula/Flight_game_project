@@ -222,7 +222,7 @@ body.game-mode {
 
 .modal-content {
   position: relative;
-  width: min(460px, 90vw);
+  width: min(500px, 90vw);
   max-height: 80vh;
   overflow-y: auto;
   border-radius: var(--radius);
@@ -318,6 +318,11 @@ body.game-mode {
 
 .upgrade-action {
   width: 100%;
+}
+
+.modal-base-list {
+  display: grid;
+  gap: 10px;
 }
 
 .close-small {
@@ -701,6 +706,7 @@ body.game-mode .caption-line {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  place-content: center;
 }
 
 .meta-row {
