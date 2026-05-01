@@ -789,7 +789,7 @@ async function createSave() {
   }
 
   saveStatusEl.textContent = "Creating save...";
-  await fetchJson("/api/create-save", {
+  await fetchJson("/api/create_save", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -813,7 +813,7 @@ async function deleteSelectedSave() {
     return;
   }
 
-  await fetchJson("/api/delete-save", {
+  await fetchJson("/api/delete_save", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
