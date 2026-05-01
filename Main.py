@@ -96,13 +96,27 @@ class Player:
 def get_conn():
     """Get the DB connection for the current session, reconnecting if needed."""
     session_id = request.headers.get("X-DB-Session")
-    conn = connections.get(session_id)
-    if not conn:
+    session = connections.get(session_id)
+    if not session:
         return None
+
+    conn = session.get("conn")
     try:
-        conn.ping(reconnect=True)
+        if conn is None or not conn.is_connected():
+            conn = GameSetup.db_connection(session["user"], session["password"])
+            if not conn:
+                return None
+            session["conn"] = conn
+        else:
+            conn.ping(reconnect=True, attempts=3, delay=1)
     except Exception:
-        return None
+        try:
+            conn = GameSetup.db_connection(session["user"], session["password"])
+        except Exception:
+            return None
+        if not conn:
+            return None
+        session["conn"] = conn
     return conn
 @app.route('/flight_game_run')
 def flight_game_run():
@@ -116,8 +130,14 @@ def db_login():
     password = data["password"]
 
     conn = GameSetup.db_connection(user, password)
+    if not conn:
+        return jsonify({"error": "Database login failed"}), 401
     session_id = user
-    connections[session_id] = conn
+    connections[session_id] = {
+        "user": user,
+        "password": password,
+        "conn": conn,
+    }
     return jsonify({"session": session_id})
 
 #Kerää kaikki savefilet sql:stä
@@ -149,6 +169,69 @@ def saves():
         })
 
     return jsonify({"saves": saves})
+@app.route("/api/create_save", methods=["POST"])
+def create_save():
+    conn = get_conn()
+    if not conn:
+        print("no connection")
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("pilot") or "").strip()
+    if not name:
+        return jsonify({"error": "Missing pilot name"}), 400
+
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM game WHERE screen_name = %s", (name,))
+    if cur.fetchone():
+        return jsonify({"error": "Save name already exists"}), 409
+
+    cur.execute("INSERT INTO game (screen_name) VALUES (%s)", (name,))
+    cur.execute(
+        "UPDATE game SET location = 'EFHK', co2_budget = 10000, co2_consumed = 0, money = 1000 WHERE screen_name = %s",
+        (name,),
+    )
+    cur.execute("SELECT id FROM game WHERE screen_name = %s", (name,))
+    game_id = int(cur.fetchone()[0])
+    cur.execute(
+        "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s, 'EFHK')",
+        (game_id,),
+    )
+    cur.execute("INSERT INTO airplane (game_id) VALUES(%s)", (game_id,))
+    cur.execute(
+        "UPDATE airplane SET ruuma = 1, moottori = 1, istuinpaikat = 1 WHERE game_id = %s",
+        (game_id,),
+    )
+    conn.commit()
+
+    return jsonify({"id": game_id, "pilot": name}), 201
+
+@app.route("/api/delete_save", methods=["POST"])
+def delete_save():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("pilot") or "").strip()
+    if not name:
+        return jsonify({"error": "Missing pilot name"}), 400
+
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM game WHERE screen_name = %s", (name,))
+    row = cur.fetchone()
+    if not row:
+        return jsonify({"error": "Save not found"}), 404
+
+    game_id = int(row[0])
+    cur.execute("DELETE FROM airplane WHERE game_id = %s", (game_id,))
+    cur.execute("DELETE FROM game WHERE id = %s", (game_id,))
+    conn.commit()
+
+    return jsonify({"deleted": True, "pilot": name})
+
+
 
 #valitsee saven ja aloittaa pelin
 @app.route("/api/game-state", methods=["GET"])
@@ -199,6 +282,7 @@ def start_mission():
 
     data = request.get_json()
     player = data.get("player")
+    print(player)
     mission = data.get("mission")
 
     if not player or not mission:
@@ -209,7 +293,28 @@ def start_mission():
     # Calculate payout: cargoAmount * payRate
     cargo_amount = mission.get("cargoAmount", 0)
     pay_rate = mission.get("payRate", 0)
+
+    cursor.execute("""
+        SELECT airplane.ruuma, airplane.istuinpaikat
+        FROM airplane
+        JOIN game ON airplane.game_id = game.id
+        WHERE game.screen_name = %s
+    """, (player,))
+    allparts = cursor.fetchall()
+    if not allparts:
+        return jsonify({"error": "Player airplane not found"}), 404
+    storageLimit = allparts[0][0] * 20
+    seats = allparts[0][1] * 20
+
+    # Laskee onko kaikelle tilaa
+    if mission.get("cargo") == "Monkeys" or mission.get("cargo") == "Humans":
+        if cargo_amount > seats:
+            cargo_amount = seats
+    else:
+        if cargo_amount > storageLimit:
+            cargo_amount = storageLimit
     payout = int(cargo_amount) * int(pay_rate)
+
 
     # Get destination airport ident
     destination = mission.get("Destination", [])
@@ -257,7 +362,8 @@ def start_mission():
         "money": int(row[0]),
         "co2_remaining": int(row[1])
     })
-    
+
+
 @app.route("/api/bases", methods=["GET"])
 def bases():
     conn = get_conn()
