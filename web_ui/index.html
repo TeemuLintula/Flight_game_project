@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<audio controls autoplay loop src="http://127.0.0.1:5000/static/flightGameMainTheme.mp3"></audio>
+  <audio autoplay loop src="http://127.0.0.1:5000/static/flightGameMainTheme.mp3"></audio>
   <div class="sky-glow sky-glow-a"></div>
   <div class="sky-glow sky-glow-b"></div>
 
@@ -68,7 +68,7 @@
         <span class="status-chip">CO2 Budget: <strong id="co2Budget">5200</strong></span>
         <span class="status-chip">Credits: <strong id="credits">8600</strong></span>
         <button id="backToSavesBtn" class="status-btn" type="button">Back To Saves</button>
-        <button id="refreshMissionsBtn" class="status-btn" type="button">Refresh Missions</button>
+        <button id="settingsBtn" class="status-btn" type="button">⚙️</button>
       </div>
     </header>
 
@@ -95,7 +95,7 @@
         <button id="missionBasetgl" class="start-btn" type="button">Select Bases</button>
         <div id="missionList" class="mission-list"></div>
         <div id="captionList" class="caption-list hidden"></div>
-        <div id="baseList" class="base-list hidden"></div>
+        <div id="baseList" class="base-list mission-list hidden"></div>
         <div id="baseActions" class="base-actions hidden"></div>
         <div id="missionActions" class="mission-actions"></div>
       </aside>

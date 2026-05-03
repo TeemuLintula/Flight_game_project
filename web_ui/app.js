@@ -6,7 +6,11 @@
 let dbSessionToken = "";
 let selectedSaveName = "";
 let player = null;  // Instance of Player class
-
+const backgroundMusic = new Audio(
+  "http://127.0.0.1:5000/static/flightGameMainTheme.mp3"
+);
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.7; // default volume
 // ============================================================
 // PLAYER CLASS
 // Encapsulates all player-related data and logic
@@ -138,6 +142,7 @@ const co2BudgetEl = document.getElementById("co2Budget");
 const playerNameEl = document.getElementById("playerName");
 const backToSavesBtn = document.getElementById("backToSavesBtn");
 const refreshMissionsBtn = document.getElementById("refreshMissionsBtn");
+const settingsBtn = document.getElementById("settingsBtn");
 
 // ============================================================
 // MODAL SYSTEM – Reusable popup for base actions & menus
@@ -181,6 +186,38 @@ function closeModal() {
   if (modal) {
     modal.classList.add("hidden");
     document.getElementById("modalBody").innerHTML = "";
+  }
+}
+
+// ============================================================
+// SETTINGS MODAL – Music Volume Control Only
+// ============================================================
+
+function openMusicSettingsModal() {
+  openModal(
+    "Audio Settings",
+    `
+    <div class="audio-settings">
+      <p>Music Volume</p>
+
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        value="${backgroundMusic.volume}"
+        id="musicVolumeSlider"
+      />
+    </div>
+    `
+  );
+
+  const slider = document.getElementById("musicVolumeSlider");
+  if (slider) {
+    slider.addEventListener("input", () => {
+      backgroundMusic.volume = slider.value;
+      localStorage.setItem("musicVolume", slider.value);
+    });
   }
 }
 
@@ -378,7 +415,7 @@ function showbaseActions(base = null) {
   if (!player.isAtSpecificHomebase(selectedBase.ident)) {
     openModal(
       "Access denied",
-      "<p class='menu-error'>You must be at this base to manage its management.</p>"
+      "<p class='menu-error'>You must be at the base to access its management.</p>"
     );
     return;
   }
@@ -1310,7 +1347,7 @@ function startSelectedMission() {
             await loadGameState();
             await loadMissions();
 
-            showMissionSelection();
+            renderButton("Select New Mission", showMissionSelection);
             refreshMapSize();
         }
 
@@ -1449,21 +1486,20 @@ function startSelectedMission() {
         }
     });
 
-    refreshMissionsBtn.addEventListener("click", async () => {
-        try {
-            await loadMissions();
-            flightStatusEl.textContent = "Mission board updated";
-        } catch (_error) {
-            flightStatusEl.textContent = "Could not refresh missions";
-        }
-    });
-
 // Start flight & back-to-saves buttons
     backToSavesBtn.addEventListener("click", () => {
         goBackToSaves().catch(() => {
             saveStatusEl.textContent = "Could not return to saves";
         });
     });
+
+
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", () => {
+        openMusicSettingsModal();
+      });
+    }
+
 
 // ============================================================
 // BOOTSTRAP
@@ -1488,8 +1524,18 @@ function startSelectedMission() {
                 authOverlayEl.classList.remove("hidden");
                 saveOverlayEl.classList.add("hidden");
                 dbAuthStatusEl.textContent = "Previous DB session expired. Please login again.";
+            
             });
         }
+        document.addEventListener(
+                "click",
+                () => {
+                  if (backgroundMusic.paused) {
+                    backgroundMusic.play().catch(() => {});
+                  }
+                },
+                { once: true }
+              );
     }
 
     document.addEventListener("DOMContentLoaded", bootstrap);
