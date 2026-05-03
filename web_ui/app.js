@@ -1133,7 +1133,7 @@ async function upgradePlanePart(part) {
 
 async function listNewBasesForSale() {
   try {
-    const data = await fetchJson("/api/available-bases");
+    const data = await fetchJson("/api/available-bases?player=" + encodeURIComponent(player.name));
     const bases = data.bases;
     const content = `
       <div class="base-sale-menu">

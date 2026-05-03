@@ -1,5 +1,8 @@
 from asyncio.windows_events import NULL
+from dataclasses import dataclass
 import random
+import logging
+
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
 from Eventit import GameSetup, Mission
@@ -195,7 +198,7 @@ def create_save():
     cur.execute("SELECT id FROM game WHERE screen_name = %s", (name,))
     game_id = int(cur.fetchone()[0])
     cur.execute(
-        "INSERT INTO game_home_base (game_id, base_ident) VALUES(%s, 'EFHK')",
+        "INSERT INTO game_home_base (game_id, base_ident, plants) VALUES(%s, 'EFHK', 0)",
         (game_id,),
     )
     cur.execute("INSERT INTO airplane (game_id) VALUES(%s)", (game_id,))
@@ -660,94 +663,153 @@ def get_plane_levels():
     }
     return jsonify({"levels": levels})
 
+
+@dataclass
+class NewBase:
+    ident: str
+    name: str
+    continent: str
+    lat: float
+    lon: float
+    price: int
+
 @app.route("/api/available-bases", methods=["GET"])
-class NewBase():
-    def __init__(self, ident, name, continent, lat, lon, price):
-        self.ident = ident
-        self.name = name
-        self.continent = continent
-        self.lat = lat
-        self.lon = lon
-        self.price = price
+def list_new_bases_for_sale():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
 
-    @app.route("/api/available-bases", methods=["GET"])
-    def listNewBasesForSale(self):
-        conn = get_conn()
-        if not conn:
-            return jsonify({"error": "Session expired"}), 401
+    cursor = conn.cursor()
 
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT ident, name, continent, latitude_deg, longitude_deg, price
-            FROM home_base
-        """)
-        rows = cursor.fetchall()
-        player = Player.name
-        print(f"Player for available bases: {player}")
-        cursor.execute("""
-            SELECT base_ident FROM game_home_base WHERE game_id = (SELECT id FROM game WHERE screen_name = %s)
-        """, (player,))
-        owned_bases_rows = cursor.fetchall()
-        print(f"Owned bases rows: {owned_bases_rows}")
-        owned_bases = []
-        bases_for_sale = []
+    player = request.args.get("player")
+    if not player:
+        return jsonify({"error": "Missing player"}), 400
 
-        for ident, name, continent, lat, lon, price in rows:
-            if ident in owned_bases:
-                continue  # skip already-owned bases
-
-            price = int(price)
-            base = NewBase(ident, name, continent, lat, lon, price)
-            bases_for_sale.append(base.__dict__)
-        return jsonify({"bases": bases_for_sale})
     
-    @app.route("/api/buy-base", methods=["POST"])
-    def buyNewBase(self):
-        conn = get_conn()
-        if not conn:
-            return jsonify({"error": "Session expired"}), 401
+    cursor.execute("""
+        SELECT hb.ident,
+               hb.name,
+               hb.continent,
+               hb.latitude_deg,
+               hb.longitude_deg,
+               hb.price
+        FROM home_base hb
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM game_home_base ghb
+            JOIN game g ON g.id = ghb.game_id
+            WHERE ghb.base_ident = hb.ident
+              AND g.screen_name = %s
+        )
+        ORDER BY hb.name
+    """, (player,))
 
-        data = request.get_json()
-        player = data.get("player")
-        base_ident = data.get("baseIdent")
-        print(f"Buying base {base_ident} for player {player}")
+    rows = cursor.fetchall()
 
-        if not player or not base_ident:
-            return jsonify({"error": "Missing player or base identifier"}), 400
+    bases = [
+        NewBase(
+            ident=row[0],
+            name=row[1],
+            continent=row[2],
+            lat=float(row[3]),
+            lon=float(row[4]),
+            price=int(row[5])
+        )
+        for row in rows
+    ]
 
-        cursor = conn.cursor()
+    return jsonify({
+        "bases": [
+            {
+                "ident": base.ident,
+                "name": base.name,
+                "continent": base.continent,
+                "lat": base.lat,
+                "lon": base.lon,
+                "price": base.price
+            }
+            for base in bases
+        ]
+    })
+
+
+@app.route("/api/buy-base", methods=["POST"])
+def buy_new_base():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json(silent=True) or {}
+    player = data.get("player")
+    base_ident = data.get("baseIdent")
+
+    if not player or not base_ident:
+        return jsonify({"error": "Missing player or base identifier"}), 400
+
+    cursor = conn.cursor()
+
+    try:
+        # Get player ID and current money
         cursor.execute("""
-            SELECT money FROM game WHERE screen_name = %s
+            SELECT id, money FROM game WHERE screen_name = %s
         """, (player,))
-        row = cursor.fetchone()
-        if not row:
+        game_row = cursor.fetchone()
+
+        if not game_row:
             return jsonify({"error": "Player not found"}), 404
 
-        current_money = int(row[0])
+        game_id, current_money = game_row
+
+        # Check base exists and get price
         cursor.execute("""
             SELECT price FROM home_base WHERE ident = %s
         """, (base_ident,))
         base_row = cursor.fetchone()
+
         if not base_row:
             return jsonify({"error": "Base not found"}), 404
 
         base_price = int(base_row[0])
-        if current_money < base_price:
+
+        # Prevent duplicate ownership
+        cursor.execute("""
+            SELECT 1 FROM game_home_base
+            WHERE game_id = %s AND base_ident = %s
+        """, (game_id, base_ident))
+
+        if cursor.fetchone():
+            return jsonify({"error": "Base already owned"}), 400
+
+        # Atomic money deduction
+        cursor.execute("""
+            UPDATE game
+            SET money = money - %s
+            WHERE id = %s AND money >= %s
+        """, (base_price, game_id, base_price))
+
+        if cursor.rowcount == 0:
             return jsonify({"error": "Not enough money to buy this base"}), 400
 
-        # Deduct money and add base to player's owned bases
-        cursor.execute("""
-            UPDATE game SET money = money - %s WHERE screen_name = %s
-        """, (base_price, player))
-        
+        # Add base to player
         cursor.execute("""
             INSERT INTO game_home_base (game_id, base_ident, plants)
-            VALUES ((SELECT id FROM game WHERE screen_name = %s), %s, 0)
-        """, (player, base_ident))
-        
+            VALUES (%s, %s, 0)
+        """, (game_id, base_ident))
+
         conn.commit()
 
-        return jsonify({"message": "Base purchased successfully!", "money": current_money - base_price})
+        return jsonify({
+            "message": "Base purchased successfully!",
+            "money": current_money - base_price
+        })
+
+    except Exception as e:
+        conn.rollback()
+        logging.exception("Failed to purchase base")
+        return jsonify({"error": "Internal server error"}), 500
+
+    finally:
+        cursor.close()
 
     
 @app.route("/api/randomEvent", methods=["GET"])
