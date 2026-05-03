@@ -77,6 +77,14 @@ class Player {
     if (!this.location || this.bases.length === 0) return false;
     return this.bases.some(base => base.ident === this.location.ident);
   }
+  
+  isAtSpecificHomebase(baseIdent) {
+    return !!(
+      this.location &&
+      this.location.ident === baseIdent
+    );
+  }
+
 
   getSelectedBase() {
     if (!this.location) return null;
@@ -365,6 +373,16 @@ function showBaseselection() {
 function showbaseActions(base = null) {
   const selectedBase = base || player.selectedBase;
   if (!selectedBase) return;
+
+  
+  if (!player.isAtSpecificHomebase(selectedBase.ident)) {
+    openModal(
+      "Access denied",
+      "<p class='menu-error'>You must be at this base to manage its management.</p>"
+    );
+    return;
+  }
+
 
   missionPanelTitleEl.textContent = `Home Base: ${selectedBase.airport}`;
   missionPanelSubtitleEl.textContent = "Manage your base and plane";
