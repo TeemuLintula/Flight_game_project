@@ -31,11 +31,11 @@ tulli_yes.buttons = [
     }
 ]
 tulli_no = tapahtuma(4)
-tulli_no.text = "Customs: We will let this slide for just this time..."
+tulli_no.text = "Customs: Oh wow you have a lot of contraband items on you. We are going to take you to prison."
 tulli_no.buttons = [
     {
         "label" : "Continue",
-        "id" : 1
+        "id" : 67
     }
 ]
 

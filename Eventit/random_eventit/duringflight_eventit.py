@@ -88,7 +88,7 @@ terrorist.buttons = [
     }
 ]
 Pray = tapahtuma(9)
-Pray.text = ("The bad men kidnapped you and you rotted in a cell for 1 year.")
+Pray.text = ("Suddenly the bad men start to wave a white flag. They surrender because they become emphatic.")
 Pray.buttons = [
     {
         "label" : "Continue",
@@ -137,7 +137,7 @@ ignore_again.text = "The aliens got tired of you and exterminated you"
 ignore_again.buttons = [
     {
         "label" : "Continue",
-        "id" : 1
+        "id" : 67
     }
 ]
 stupid = tapahtuma(19)
@@ -148,6 +148,7 @@ stupid.buttons = [
         "id" : 1
     }
 ]
+
 
 #-------------------ALIEN INVADE EVENT------------------------------------------
 
