@@ -1047,7 +1047,7 @@ function startHomebaseFlight(base) {
             milestones.add("landing-event");
             const x = Math.floor(Math.random() * 5);
             console.log(x);
-            if (true) {
+            if (x == 2) {
               isPaused = true;
               pauseStartTime = performance.now();
 
@@ -1475,7 +1475,6 @@ function startSelectedMission() {
 async function randomEvent(type, id) {
     if (id == 1) return;
     if (id == 67) {
-        endGame();
         endGame();
         return;
     }

@@ -25,7 +25,7 @@ skinwalker.buttons = [
 
 skinwalker_let_in = tapahtuma(3)
 skinwalker_let_in.text = "He thanks you... then attacks you instantly."
-skinwalker_let_in.buttons = [{"label": "Continue", "id": 1}]
+skinwalker_let_in.buttons = [{"label": "Continue", "id": 67}]
 
 skinwalker_question = tapahtuma(4)
 skinwalker_question.text = "You question him. His answers seem suspicious. What now?"
