@@ -808,10 +808,21 @@ def buy_new_base():
 
         conn.commit()
 
+        
+        if base_ident == "TIST":
+            return jsonify({
+                "message": "Base purchased successfully!",
+                "money": current_money - base_price,
+                "gameWon": True,
+                "gameWonMessage": LORE.lore_ending(player)
+            })
+
         return jsonify({
             "message": "Base purchased successfully!",
-            "money": current_money - base_price
+            "money": current_money - base_price,
+            "gameWon": False
         })
+
 
     except Exception as e:
         conn.rollback()
@@ -878,6 +889,53 @@ def end_game():
     return jsonify({
         "message": "Game over",
         "player": player
+    })
+
+@app.route("/api/game-won", methods=["POST"])
+def wonGame():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json()
+    player = data.get("player")
+
+    if not player:
+        return jsonify({"error": "Missing player"}), 400
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id
+        FROM game
+        WHERE screen_name = %s
+    """, (player,))
+    row = cursor.fetchone()
+
+    if not row:
+        return jsonify({"error": "Player not found"}), 404
+
+    game_id = row[0]
+
+    cursor.execute("""
+        SELECT 1
+        FROM game_home_base
+        WHERE game_id = %s
+          AND base_ident = 'TIST'
+        LIMIT 1
+    """, (game_id,))
+
+    has_tist = cursor.fetchone()
+
+    if not has_tist:
+        return jsonify({
+            "error": "Win condition not met"
+        }), 400
+
+    message = LORE.lore_ending(player)
+
+    return jsonify({
+        "message": message
     })
 
 @app.route('/app.js')

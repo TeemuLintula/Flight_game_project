@@ -327,7 +327,7 @@ function typewriterText(element, text, speed = 30) {
 }
 
 // ============================================================
-// GAME OVER
+// GAME OVER / GAME WON
 // ============================================================
 
 async function endGame() {
@@ -352,6 +352,22 @@ function showGameOverScreen() {
   player = null;
 }
 
+function gameWon(message) {
+
+    const content = `
+      <div class="game-won-screen">
+        <p class="menu-info">YOU BEAT THE SYSTEM</p>
+        <p id="gamewontext"></p>
+        <button class="menu-btn" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    openModal("Game Won", content);
+    const gamewonEL = document.getElementById("gamewontext");
+    if (gamewonEL) {
+      typewriterText(gamewonEL, message, 25);
+    }
+
+  }
 
 // ============================================================
 // UI PANEL TOGGLING
@@ -889,14 +905,13 @@ async function createSave() {
 
   saveStatusEl.textContent = "Creating save...";
 
-  // ✅ STORE THE RESPONSE
+  // STORE THE RESPONSE
   const response = await fetchJson("/api/create_save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pilot })
   });
 
-  // ✅ USE THE LORE FROM PYTHON HERE
   if (response.lore) {
     openModal(
   "Pilot Lore",
@@ -1283,6 +1298,25 @@ async function buyNewBase(baseIdent) {
       body: JSON.stringify({ player: player.name, baseIdent })
     });
     player.money = data.money;
+    if (data.gameWon) {
+      openModal(
+        "Game Won",
+          `
+          <div class="game-won-screen">
+            <p class="menu-info">YOU BEAT THE SYSTEM</p>
+            <p id="gamewontext"></p>
+            <button class="menu-btn" onclick="closeModal()">Thank You</button>
+          </div>
+          `
+        );
+
+    const el = document.getElementById("gamewontext");
+    if (el) {
+    typewriterText(el, data.gameWonMessage, 40);
+    }
+  }
+  return;
+
     creditsEl.textContent = String(data.money);
     appendCaption(`Purchased new base: ${data.baseName}`);
     await loadBases();
