@@ -2,6 +2,8 @@ from asyncio.windows_events import NULL
 from dataclasses import dataclass
 import random
 import logging
+from geopy.distance import geodesic
+import math
 
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
@@ -275,6 +277,51 @@ def callMissions():
     print(jsonify({"missions": missions}))
     return jsonify({"missions": missions})
 
+
+def calculatePlantGrowth(timeInHours, cursor, name):
+    id_game = "SELECT id FROM game WHERE screen_name = %s"
+    cursor.execute(id_game, (name,))
+    id_game = cursor.fetchone()[0]
+    multiplier = math.pow(1.5, timeInHours / 12)
+    sql = """
+            SELECT COALESCE(SUM(plants), 0)
+            FROM game_home_base
+            WHERE game_id = %s
+          """
+    cursor.execute(sql, (id_game,))
+    total_plants = cursor.fetchone()
+    total_plants = float(total_plants[0])
+    new_plants = math.floor(total_plants * multiplier)
+    sql = """
+                UPDATE game_home_base
+                SET plants = FLOOR(plants * %s)
+                WHERE game_id = %s
+                 """
+
+    cursor.execute(sql, (multiplier, id_game))
+
+    sql = "UPDATE game SET co2_budget = co2_budget + %s where screen_name = %s"
+    cursor.execute(sql, (int(new_plants-total_plants), name))
+
+    growth = new_plants-total_plants
+    return growth
+
+
+
+def calculateDistance(location, destination, cursor, name):
+    distance = geodesic((location[2], location[3]), (destination[2], destination[3])).kilometers
+
+    cursor.execute(f"select airplane.moottori from airplane, game where airplane.game_id = game.id and game.screen_name = '{name}'")
+    motor = cursor.fetchall()
+    consumption = 5 / motor[0][0]
+
+    co = int(distance / 25 * consumption)
+    print(f"Distance flought {int(distance)}km and co2 consumed {co}")
+    cosql = f"UPDATE game SET co2_consumed = co2_consumed + {co} WHERE screen_name = %s"
+    cursor.execute(cosql, (name,))
+    time = distance / 800
+    growth = calculatePlantGrowth(time, cursor, name)
+    return co, growth
 @app.route("/api/start-mission", methods=["POST"])
 def start_mission():
     conn = get_conn()
@@ -318,24 +365,16 @@ def start_mission():
 
 
     # Get destination airport ident
+    location = mission.get("Location", [])
     destination = mission.get("Destination", [])
-    if not destination or len(destination[0]) < 5:
-        return jsonify({"error": "Invalid mission destination", "debug": destination}), 400
+    print(location[0])
+    print(destination[0])
     dest_ident = destination[0][4]  # airport ident is 5th element (index 4)
 
-    # Calculate approximate CO2 based on distance (rough estimate: 0.25kg per km)
-    origin = mission.get("Location", [])
-    if origin and len(origin) > 0 and len(origin[0]) >= 4:
-        orig_lat = float(origin[0][2])
-        orig_lon = float(origin[0][3])
-        dest_lat = float(destination[0][2])
-        dest_lon = float(destination[0][3])
-        lat_diff = abs(dest_lat - orig_lat)
-        lon_diff = abs(dest_lon - orig_lon)
-        distance_km = (lat_diff + lon_diff) * 111
-        co2_used = int(distance_km * 0.25)
-    else:
-        co2_used = 100  # default fallback
+    distance = calculateDistance(location[0], destination[0], cursor, player)
+    co = distance[0]
+    growth = distance[1]
+
 
     # Update player: add money, deduct CO2, update location
     cursor.execute("""
@@ -344,7 +383,7 @@ def start_mission():
             co2_consumed = co2_consumed + %s,
             location = %s
         WHERE screen_name = %s
-    """, (payout, co2_used, dest_ident, player))
+    """, (payout, co, dest_ident, player))
     conn.commit()
 
     # Get updated values to return
@@ -355,6 +394,7 @@ def start_mission():
     """, (player,))
     row = cursor.fetchone()
 
+
     if not row:
         return jsonify({"error": "Player not found after update"}), 500
 
@@ -363,7 +403,9 @@ def start_mission():
         "money": int(row[0]),
         "co2_remaining": int(row[1]),
         "flownCargoAmount": cargo_amount,
-        "cargoType": mission.get("cargo")
+        "cargoType": mission.get("cargo"),
+        "co2_consumed" : co,
+        "plantGrowth" : growth
     })
 
 
