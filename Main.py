@@ -852,6 +852,34 @@ def randomEvent():
     }
     """
     return jsonify({"event": event})
+
+@app.route("/api/end-game", methods=["POST"])
+def end_game():
+    conn = get_conn()
+    if not conn:
+        return jsonify({"error": "Session expired"}), 401
+
+    data = request.get_json()
+    player = data.get("player")
+
+    if not player:
+        return jsonify({"error": "Missing player"}), 400
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE game
+        SET screen_name = NULL
+        WHERE screen_name = %s
+    """, (player,))
+
+    conn.commit()
+
+    return jsonify({
+        "message": "Game over",
+        "player": player
+    })
+
 @app.route('/app.js')
 def js():
     return send_from_directory('web_ui', 'app.js')

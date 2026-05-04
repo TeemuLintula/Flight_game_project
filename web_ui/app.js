@@ -327,6 +327,33 @@ function typewriterText(element, text, speed = 30) {
 }
 
 // ============================================================
+// GAME OVER
+// ============================================================
+
+async function endGame() {
+  await fetchJson("/api/end-game", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ player: player.name })
+  });
+
+  showGameOverScreen();
+}
+
+function showGameOverScreen() {
+  openModal(
+    "Game Over",
+    `
+      <p class="menu-info">Your journey has ended.</p>
+      <button class="menu-btn" onclick="goBackToSaves(), closeModal()">Return to Saves</button>
+    `
+  );
+  stopFlightAnimation();
+  player = null;
+}
+
+
+// ============================================================
 // UI PANEL TOGGLING
 // Switches the right panel between different elements.
 // ============================================================
