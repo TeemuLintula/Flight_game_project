@@ -5,7 +5,7 @@ import logging
 
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
-from Eventit import GameSetup, Mission
+from Eventit import GameSetup, Mission, LORE
 from Eventit.random_eventit import airport_eventit, duringflight_eventit, Homebase_eventit
 
 #tallentaa luodut yhteydet palvelimeen
@@ -208,7 +208,7 @@ def create_save():
     )
     conn.commit()
 
-    return jsonify({"id": game_id, "pilot": name}), 201
+    return jsonify({"id": game_id, "pilot": name, "lore": LORE.lore(name)}), 201
 
 @app.route("/api/delete_save", methods=["POST"])
 def delete_save():
@@ -233,8 +233,6 @@ def delete_save():
     conn.commit()
 
     return jsonify({"deleted": True, "pilot": name})
-
-
 
 #valitsee saven ja aloittaa pelin
 @app.route("/api/game-state", methods=["GET"])

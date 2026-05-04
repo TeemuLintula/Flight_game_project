@@ -309,6 +309,23 @@ function clearButtons(){
   const box = document.getElementById("missionActions");
   if (box) box.replaceChildren();
 }
+
+
+function typewriterText(element, text, speed = 30) {
+  element.textContent = "";
+  let index = 0;
+
+  function tick() {
+    if (index < text.length) {
+      element.textContent += text[index];
+      index++;
+      setTimeout(tick, speed);
+    }
+  }
+
+  tick();
+}
+
 // ============================================================
 // UI PANEL TOGGLING
 // Switches the right panel between different elements.
@@ -844,19 +861,38 @@ async function createSave() {
   }
 
   saveStatusEl.textContent = "Creating save...";
-  await fetchJson("/api/create_save", {
+
+  // ✅ STORE THE RESPONSE
+  const response = await fetchJson("/api/create_save", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pilot })
   });
+
+  // ✅ USE THE LORE FROM PYTHON HERE
+  if (response.lore) {
+    openModal(
+  "Pilot Lore",
+  `
+    <div class="lore-modal">
+      <p id="loreText" class="lore-text"></p>
+      <button class="menu-btn" onclick="closeModal()">Continue</button>
+    </div>
+  `
+);
+}
+
+// ✅ START TYPEWRITER AFTER MODAL IS IN DOM
+const loreEl = document.getElementById("loreText");
+if (loreEl) {
+  typewriterText(loreEl, response.lore, 28);
+}
+``
 
   newSaveNameEl.value = "";
   await loadSaves();
   saveStatusEl.textContent = `Save created: ${pilot}`;
 }
-
 // Deletes the currently highlighted save after user confirmation
 async function deleteSelectedSave() {
   if (!selectedSaveName) {
@@ -1343,6 +1379,7 @@ function startSelectedMission() {
             }
 
             stopFlightAnimation();
+            appendCaption(`Mission completed: ${selectedMission.Name} - Arrived at destination: ${selectedMission.Destination[0][0]} - Payment received: ${formatMoney(missionTotal(selectedMission))}`);
             await completeMissionOnBackend(selectedMission);
             await loadGameState();
             await loadMissions();
