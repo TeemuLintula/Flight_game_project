@@ -361,7 +361,9 @@ def start_mission():
     return jsonify({
         "payout": payout,
         "money": int(row[0]),
-        "co2_remaining": int(row[1])
+        "co2_remaining": int(row[1]),
+        "flownCargoAmount": cargo_amount,
+        "cargoType": mission.get("cargo")
     })
 
 

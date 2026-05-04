@@ -882,7 +882,7 @@ async function createSave() {
 );
 }
 
-// ✅ START TYPEWRITER AFTER MODAL IS IN DOM
+// START TYPEWRITER AFTER MODAL IS OPENED TO ENSURE THE ELEMENT EXISTS
 const loreEl = document.getElementById("loreText");
 if (loreEl) {
   typewriterText(loreEl, response.lore, 28);
@@ -936,6 +936,7 @@ async function completeMissionOnBackend(mission) {
       player: player.name,
       mission
     })
+    
   });
 }
 
@@ -1287,7 +1288,6 @@ function startSelectedMission() {
 
     const selectedMission = player.selectedMission;
     stopFlightAnimation();
-    clearCaptainLog();
     showCaptainLog(selectedMission);
     appendCaption(`Mission accepted: ${selectedMission.Name}`);
 
@@ -1343,7 +1343,7 @@ function startSelectedMission() {
         } else if (progress < holdEndPct) {
             setPlanePosition(legAEnd, legAEnd, 1);
             if (progress > 0.2 && !milestones.has("at-gate")) {
-                appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
+                appendCaption(`Ground crew started trying to load ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
                 milestones.add("at-gate");
                 const x = Math.floor(Math.random() * 8);
                 console.log(x);
@@ -1365,7 +1365,6 @@ function startSelectedMission() {
                     (progress - holdEndPct) / (1 - holdEndPct)
                 );
                 if (progress > 0.1 && !milestones.has("cargo-loaded")) {
-              appendCaption(`${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"} loaded in`);
               appendCaption(`Departed to ${selectedMission.Destination[0][0]} ${selectedMission.Destination[0][1]}`)
               milestones.add("cargo-loaded");
             }
@@ -1379,8 +1378,25 @@ function startSelectedMission() {
             }
 
             stopFlightAnimation();
-            appendCaption(`Mission completed: ${selectedMission.Name} - Arrived at destination: ${selectedMission.Destination[0][0]} - Payment received: ${formatMoney(missionTotal(selectedMission))}`);
-            await completeMissionOnBackend(selectedMission);
+            const result = await completeMissionOnBackend(selectedMission);
+            
+            const flownAmount = result.flownCargoAmount;
+            const isPeople = result.cargoType.includes("Humans");
+            const unit = isPeople ? "passengers" : "cargo units";
+
+            if (flownAmount < selectedMission.cargoAmount) {
+            appendCaption(
+              `${flownAmount} ${unit} transported (capacity limited by aircraft)`
+            )}
+            else {
+              appendCaption(
+                `${flownAmount} ${unit} transported`
+              )
+            }
+            appendCaption(
+              `Mission completed: ${selectedMission.Name} — Payment received: ${formatMoney(result.payout)}`
+            );
+
             await loadGameState();
             await loadMissions();
 
