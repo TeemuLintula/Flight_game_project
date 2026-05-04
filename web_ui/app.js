@@ -558,7 +558,7 @@ function drawPlayerLocationMarker() {
     playerMarker = L.marker(point, {
       icon: L.divIcon({
         className: "",
-        html: '<div class="player-marker">✈️</div>',
+        html: '<div class="player-marker">📍</div>',
         iconSize: [34, 34],
         iconAnchor: [17, 17]
       })
@@ -635,7 +635,7 @@ function setPlanePosition(start, end, t) {
     planeMarker = L.marker(point, {
       icon: L.divIcon({
         className: "",
-        html: '<div class="plane-marker">JET</div>',
+        html: '<div class="plane-marker">🛩️</div>',
         iconSize: [34, 34],
         iconAnchor: [17, 17]
       })
@@ -1354,7 +1354,7 @@ function startSelectedMission() {
 
             if (progress > 0.2 && !milestones.has("event-a")) {
                 milestones.add("event-a");
-                const x = Math.floor(Math.random() * 8);
+                const x = Math.floor(Math.random() * 5);
                 if (x == 2) {
 
                     isPaused = true;
@@ -1372,7 +1372,7 @@ function startSelectedMission() {
             if (progress > 0.2 && !milestones.has("at-gate")) {
                 appendCaption(`Ground crew started trying to load ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
                 milestones.add("at-gate");
-                const x = Math.floor(Math.random() * 8);
+                const x = Math.floor(Math.random() * 5);
                 console.log(x);
                 if (x == 2) {
 
