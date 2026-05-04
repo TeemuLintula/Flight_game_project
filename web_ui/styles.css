@@ -724,6 +724,7 @@ body.game-mode .caption-line {
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   animation: cardIn 360ms ease both;
+  max-height: fit-content;
 }
 
 .mission-card.illegal {
