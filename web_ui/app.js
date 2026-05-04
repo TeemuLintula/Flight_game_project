@@ -309,6 +309,23 @@ function clearButtons(){
   const box = document.getElementById("missionActions");
   if (box) box.replaceChildren();
 }
+
+
+function typewriterText(element, text, speed = 30) {
+  element.textContent = "";
+  let index = 0;
+
+  function tick() {
+    if (index < text.length) {
+      element.textContent += text[index];
+      index++;
+      setTimeout(tick, speed);
+    }
+  }
+
+  tick();
+}
+
 // ============================================================
 // UI PANEL TOGGLING
 // Switches the right panel between different elements.
@@ -844,19 +861,38 @@ async function createSave() {
   }
 
   saveStatusEl.textContent = "Creating save...";
-  await fetchJson("/api/create_save", {
+
+  // ✅ STORE THE RESPONSE
+  const response = await fetchJson("/api/create_save", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pilot })
   });
+
+  // ✅ USE THE LORE FROM PYTHON HERE
+  if (response.lore) {
+    openModal(
+  "Pilot Lore",
+  `
+    <div class="lore-modal">
+      <p id="loreText" class="lore-text"></p>
+      <button class="menu-btn" onclick="closeModal()">Continue</button>
+    </div>
+  `
+);
+}
+
+// START TYPEWRITER AFTER MODAL IS OPENED TO ENSURE THE ELEMENT EXISTS
+const loreEl = document.getElementById("loreText");
+if (loreEl) {
+  typewriterText(loreEl, response.lore, 28);
+}
+``
 
   newSaveNameEl.value = "";
   await loadSaves();
   saveStatusEl.textContent = `Save created: ${pilot}`;
 }
-
 // Deletes the currently highlighted save after user confirmation
 async function deleteSelectedSave() {
   if (!selectedSaveName) {
@@ -900,6 +936,7 @@ async function completeMissionOnBackend(mission) {
       player: player.name,
       mission
     })
+    
   });
 }
 
@@ -1108,18 +1145,18 @@ async function upgradePlane() {
         <div class="upgrade-grid">
           <div class="upgrade-card">
             <p class="upgrade-name">Ruumat</p>
-            <p class="upgrade-level">Level ${levels.ruuma}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000</button>
+            <p class="upgrade-level">Level ${levels.ruuma}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
             <p class="upgrade-name">Istuinpaikat</p>
-            <p class="upgrade-level">Level ${levels.istuinpaikat}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000</button>
+            <p class="upgrade-level">Level ${levels.istuinpaikat}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
             <p class="upgrade-name">Moottori</p>
-            <p class="upgrade-level">Level ${levels.moottori}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000</button>
+            <p class="upgrade-level">Level ${levels.moottori}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000€</button>
           </div>
         </div>
       </div>
@@ -1156,19 +1193,19 @@ async function upgradePlanePart(part) {
         </div>
         <div class="upgrade-grid">
           <div class="upgrade-card">
-            <p class="upgrade-name">Ruumat</p>
-            <p class="upgrade-level">Level ${data.levels.ruuma}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000</button>
+            <p class="upgrade-name">Ruuma</p>
+            <p class="upgrade-level">Level ${data.levels.ruuma}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
             <p class="upgrade-name">Istuinpaikat</p>
-            <p class="upgrade-level">Level ${data.levels.istuinpaikat}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000</button>
+            <p class="upgrade-level">Level ${data.levels.istuinpaikat}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
             <p class="upgrade-name">Moottori</p>
-            <p class="upgrade-level">Level ${data.levels.moottori}</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000</button>
+            <p class="upgrade-level">Level ${data.levels.moottori}/5</p>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000€</button>
           </div>
         </div>
       </div>
@@ -1251,7 +1288,6 @@ function startSelectedMission() {
 
     const selectedMission = player.selectedMission;
     stopFlightAnimation();
-    clearCaptainLog();
     showCaptainLog(selectedMission);
     appendCaption(`Mission accepted: ${selectedMission.Name}`);
 
@@ -1307,7 +1343,7 @@ function startSelectedMission() {
         } else if (progress < holdEndPct) {
             setPlanePosition(legAEnd, legAEnd, 1);
             if (progress > 0.2 && !milestones.has("at-gate")) {
-                appendCaption(`Ground crew started loading ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
+                appendCaption(`Ground crew started trying to load ${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"}.`);
                 milestones.add("at-gate");
                 const x = Math.floor(Math.random() * 5);
                 console.log(x);
@@ -1329,7 +1365,6 @@ function startSelectedMission() {
                     (progress - holdEndPct) / (1 - holdEndPct)
                 );
                 if (progress > 0.1 && !milestones.has("cargo-loaded")) {
-              appendCaption(`${selectedMission.cargoAmount} ${selectedMission.cargo.includes("humans") ? "passengers" : "cargo units"} loaded in`);
               appendCaption(`Departed to ${selectedMission.Destination[0][0]} ${selectedMission.Destination[0][1]}`)
               milestones.add("cargo-loaded");
             }
@@ -1343,7 +1378,25 @@ function startSelectedMission() {
             }
 
             stopFlightAnimation();
-            await completeMissionOnBackend(selectedMission);
+            const result = await completeMissionOnBackend(selectedMission);
+            
+            const flownAmount = result.flownCargoAmount;
+            const isPeople = result.cargoType.includes("Humans");
+            const unit = isPeople ? "passengers" : "cargo units";
+
+            if (flownAmount < selectedMission.cargoAmount) {
+            appendCaption(
+              `${flownAmount} ${unit} transported (capacity limited by aircraft)`
+            )}
+            else {
+              appendCaption(
+                `${flownAmount} ${unit} transported`
+              )
+            }
+            appendCaption(
+              `Mission completed: ${selectedMission.Name} — Payment received: ${formatMoney(result.payout)}`
+            );
+
             await loadGameState();
             await loadMissions();
 

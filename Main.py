@@ -5,7 +5,7 @@ import logging
 
 
 from flask import Flask, render_template, send_from_directory, request, jsonify
-from Eventit import GameSetup, Mission
+from Eventit import GameSetup, Mission, LORE
 from Eventit.random_eventit import airport_eventit, duringflight_eventit, Homebase_eventit
 
 #tallentaa luodut yhteydet palvelimeen
@@ -208,7 +208,7 @@ def create_save():
     )
     conn.commit()
 
-    return jsonify({"id": game_id, "pilot": name}), 201
+    return jsonify({"id": game_id, "pilot": name, "lore": LORE.lore(name)}), 201
 
 @app.route("/api/delete_save", methods=["POST"])
 def delete_save():
@@ -233,8 +233,6 @@ def delete_save():
     conn.commit()
 
     return jsonify({"deleted": True, "pilot": name})
-
-
 
 #valitsee saven ja aloittaa pelin
 @app.route("/api/game-state", methods=["GET"])
@@ -363,7 +361,9 @@ def start_mission():
     return jsonify({
         "payout": payout,
         "money": int(row[0]),
-        "co2_remaining": int(row[1])
+        "co2_remaining": int(row[1]),
+        "flownCargoAmount": cargo_amount,
+        "cargoType": mission.get("cargo")
     })
 
 
@@ -573,13 +573,14 @@ def plant_trade():
 # Placeholder lentokoneen päivitykselle
 @app.route("/api/upgrade-plane", methods=["POST"])
 def upgrade_plane():
+    MAX_PART_LEVEL = 5
     conn = get_conn()
     if not conn:
         return jsonify({"error": "Session expired"}), 401
 
     data = request.get_json()
     player = data.get("player")
-    part = data.get("part")  # New: which part to upgrade
+    part = data.get("part")  
 
     if not player or not part:
         return jsonify({"error": "Missing player or part"}), 400
@@ -597,7 +598,7 @@ def upgrade_plane():
         return jsonify({"error": "Player not found"}), 404
 
     current_money = int(row[0])
-    upgrade_cost = 1000  # Example cost per upgrade
+    upgrade_cost = 1000 
 
     if current_money < upgrade_cost:
         return jsonify({"error": "Not enough money"}), 400
@@ -615,6 +616,15 @@ def upgrade_plane():
         "moottori": plane_row[1],
         "istuinpaikat": plane_row[2]
     }
+
+    
+    current_level = current_levels.get(part)
+
+    if current_level >= MAX_PART_LEVEL:
+        return jsonify({
+        "error": f"{part.capitalize()} is already at max level ({MAX_PART_LEVEL})"
+        }), 400
+
 
     # Upgrade the specific part
     cursor.execute(f"""
