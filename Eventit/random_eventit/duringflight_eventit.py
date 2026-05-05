@@ -201,6 +201,15 @@ rally.buttons = [
         "id" : 1
     }
 ]
+#-------------------INTERPOL JOS LIIKAA CO2 PÄÄSTÖJÄ-----------------------------
+interpol = tapahtuma(22)
+interpol.text = "Interpol became suspicious about your CO2 emission. They hunted you down by searching everywhere"
+interpol.buttons = [
+    {
+        "label" : "Continue",
+        "id" : 67
+    }
+]
 #-------------------TAPAHTUMAT RANDOMIZATAAN TÄSSÄ_______________________________
 # ID 0 = tulee uus random tapahtuma, ID 1 = tapahtuma loppuu
 

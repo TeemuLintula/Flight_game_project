@@ -1,11 +1,13 @@
 :root {
-  --bg-1: #f4efe3;
-  --bg-2: #e3f1f7;
-  --ink: #15212f;
-  --muted: #44525f;
-  --accent: #d14a1f;
+  background:
+    url("static/images/Smoke.png") center/cover no-repeat;
+  backdrop-filter: blur(6px);
+  --bg-2: #003a53;
+  --ink: green;
+  --glass: whitesmoke;
+  --muted: #004891;
+  --accent: #bd0f2b;
   --accent-soft: #f7b96e;
-  --glass: rgba(255, 255, 255, 0.72);
   --line: rgba(14, 33, 52, 0.16);
   --radius: 20px;
   --shadow: 0 12px 40px rgba(20, 33, 45, 0.16);
@@ -34,17 +36,16 @@ body {
 }
 
 body.game-mode {
-  --bg-1: #0e1722;
-  --bg-2: #121826;
-  --ink: #e6edf6;
-  --muted: #9eb0c3;
-  --glass: rgba(18, 28, 40, 0.72);
+  --bg-1: #24b824;
+  --bg-2: #0f7826;
+  --ink: rgb(0 255 0);
+  --muted: rgb(36 184 36);
+  --glass: rgb(17 30 40);
   --line: rgba(150, 175, 199, 0.26);
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.42);
   background:
-    radial-gradient(circle at 10% 8%, rgba(28, 58, 88, 0.5) 0%, transparent 38%),
-    radial-gradient(circle at 90% 12%, rgba(22, 92, 108, 0.38) 0%, transparent 42%),
-    linear-gradient(145deg, #0b131d, #111a28);
+  url("static/images/Smoke.png") center/cover no-repeat;
+    linear-gradient(145deg, #11e8a7, black);
 }
 
 .sky-glow {
@@ -61,13 +62,13 @@ body.game-mode {
 .sky-glow-a {
   top: -120px;
   left: -80px;
-  background: #ffd98e;
+  background: #24b824;
 }
 
 .sky-glow-b {
   right: -140px;
   bottom: -120px;
-  background: #88d1ff;
+  background: #24b824;
 }
 
 .app-shell {
@@ -353,7 +354,7 @@ body.game-mode {
 .upgrade-card {
   flex: 1 1 120px;
   min-width: 110px;
-  background: rgba(158, 176, 195, 0.4);
+  background: linear-gradient(145deg, #368036, #1f6687);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px;
@@ -550,7 +551,7 @@ h1 {
 .start-btn {
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(145deg, #124b6c, #1f6687);
+  background: linear-gradient(145deg, #368036, #1f6687);
   color: #ffffff;
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 0.92rem;
@@ -564,7 +565,7 @@ h1 {
 .mission-btn {
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(145deg, #124b6c, #1f6687);
+  background: linear-gradient(145deg, #368036, #1f6687);
   color: #ffffff;
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 0.92rem;
@@ -716,7 +717,7 @@ body.game-mode .caption-line {
 
 .mission-card {
   border: 1px solid var(--line);
-  border-left: 6px solid #5ca6c4;
+  border-left: 6px solid #0f7826;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.86);
   padding: 12px;
@@ -736,7 +737,7 @@ body.game-mode .caption-line {
 }
 
 .mission-card.active {
-  border-color: #1f6687;
+  border-color: #0f7826;
   box-shadow: 0 0 0 3px rgba(31, 102, 135, 0.14);
 }
 

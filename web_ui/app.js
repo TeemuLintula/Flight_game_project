@@ -1221,19 +1221,19 @@ async function upgradePlane() {
         </div>
         <div class="upgrade-grid">
           <div class="upgrade-card">
-            <p class="upgrade-name">Ruumat</p>
+            <p class="upgrade-name">Hull</p>
             <p class="upgrade-level">Level ${levels.ruuma}/5</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('ruuma')">Upgrade 1000€</button>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('Hull')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
-            <p class="upgrade-name">Istuinpaikat</p>
+            <p class="upgrade-name">Seats</p>
             <p class="upgrade-level">Level ${levels.istuinpaikat}/5</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('istuinpaikat')">Upgrade 1000€</button>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('Seats')">Upgrade 1000€</button>
           </div>
           <div class="upgrade-card">
-            <p class="upgrade-name">Moottori</p>
+            <p class="upgrade-name">Engine</p>
             <p class="upgrade-level">Level ${levels.moottori}/5</p>
-            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('moottori')">Upgrade 1000€</button>
+            <button class="menu-btn upgrade-action" onclick="upgradePlanePart('Engine')">Upgrade 1000€</button>
           </div>
         </div>
       </div>
