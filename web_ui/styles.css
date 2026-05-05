@@ -1,6 +1,4 @@
 :root {
-  background:
-    url("static/images/Smoke.png") center/cover no-repeat;
   backdrop-filter: blur(6px);
   --bg-2: #003a53;
   --ink: green;
@@ -32,7 +30,9 @@ body {
     radial-gradient(circle at 95% 18%, #d4ecff 0%, transparent 38%),
     linear-gradient(135deg, var(--bg-1), var(--bg-2));
   position: relative;
-  overflow-y: auto;
+  overflow-y: hidden;
+  background:
+  url("static/images/Smoke.png") center/cover no-repeat;
 }
 
 body.game-mode {
@@ -45,7 +45,7 @@ body.game-mode {
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.42);
   background:
   url("static/images/Smoke.png") center/cover no-repeat;
-    linear-gradient(145deg, #11e8a7, black);
+  linear-gradient: (145deg, #11e8a7, black);
 }
 
 .sky-glow {

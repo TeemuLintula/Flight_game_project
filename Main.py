@@ -474,7 +474,7 @@ def start_homebase():
     orig_lat, orig_lon = map(float, origin_row)
     dest_lat, dest_lon = map(float, dest_row)
     distance_km = (abs(dest_lat - orig_lat) + abs(dest_lon - orig_lon)) * 111
-    co2_used = int(distance_km * 0.25)
+    co2_used = 0 #int(distance_km * 0.25)
 
     cursor.execute("""
         UPDATE game
