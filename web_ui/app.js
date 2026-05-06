@@ -1308,7 +1308,7 @@ async function listNewBasesForSale() {
       <div class="base-sale-menu">
         <p class="menu-info">Available Bases for Purchase:</p>
         <ul class="modal-base-list">
-          ${bases.map(base => `<li>${base.name} (${base.continent}) - ${formatMoney(base.price)} <button class="menu-btn" onclick="buyNewBase('${base.ident}')">Buy</button></li>`).join("")}
+          ${bases.map(base => `<li>${base.name} (${base.continent}) - ${formatMoney(base.price)} <button class="menu-btn" onclick="buyNewBase('${base.ident}'), closeModal()">Buy</button></li>`).join("")}
         </ul>
         <button class="menu-btn" onclick="closeModal()">Close</button>
       </div>
@@ -1332,41 +1332,49 @@ async function buyNewBase(baseIdent) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ player: player.name, baseIdent })
     });
+
     player.money = data.money;
+    creditsEl.textContent = String(data.money); // ✅ ALWAYS update money
+
     if (data.gameWon) {
       openModal(
         "Game Won",
-          `
-          <div class="game-won-screen">
-            <p class="menu-info">YOU BEAT THE SYSTEM</p>
-            <p id="gamewontext"></p>
-            <button class="menu-btn" onclick="closeModal()">Thank You</button>
-          </div>
-          `
-        );
+        `
+        <div class="game-won-screen">
+          <p class="menu-info">YOU BEAT THE SYSTEM</p>
+          <p id="gamewontext"></p>
+          <button class="menu-btn" onclick="closeModal()">Thank You</button>
+        </div>
+        `
+      );
 
-    const el = document.getElementById("gamewontext");
-    if (el) {
-    typewriterText(el, data.gameWonMessage, 40);
+      const el = document.getElementById("gamewontext");
+      if (el) {
+        typewriterText(el, data.gameWonMessage, 40);
+      }
+
+      return;
     }
-  }
-  return;
 
-    creditsEl.textContent = String(data.money);
-    appendCaption(`Purchased new base: ${data.baseName}`);
+    // ✅ Normal purchase flow
+    appendCaption(`Purchased new base: ${baseIdent}`);
     await loadBases();
     closeModal();
+
   } catch (error) {
     console.error("Error buying new base:", error);
-    const content = `
+    openModal(
+      "Buy New Bases",
+      `
       <div class="base-sale-menu">
         <p class="menu-error">Failed to purchase base.</p>
         <button class="menu-btn" onclick="closeModal()">Close</button>
       </div>
-    `;
-        openModal("Buy New Bases", content);
-    }
+      `
+    );
+  }
 }
+``
 
 
 // Make functions global for onclick handlers

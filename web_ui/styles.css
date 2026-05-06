@@ -45,7 +45,6 @@ body.game-mode {
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.42);
   background:
   url("static/images/Smoke.png") center/cover no-repeat;
-  linear-gradient: (145deg, #11e8a7, black);
 }
 
 .sky-glow {
