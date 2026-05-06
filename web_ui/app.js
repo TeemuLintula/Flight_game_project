@@ -719,7 +719,7 @@ function renderSaveList(saves) {
         card.className = "save-card";
         card.innerHTML = `
       <h3>${save.pilot}</h3>
-      <p>Credits: ${formatMoney(save.money)}</p>
+      <p>Money: ${formatMoney(save.money)}</p>
       <p>CO2 remaining: ${save.co2_remaining}</p>
     `;
 
